@@ -13,11 +13,32 @@
 }
 
 .board-row {
-  margin-bottom: 50px;
+  margin-bottom: 0px;
 }
 
 .board-cell {
-  font-size: 75px;
+  width: 130px;
+  height: 130px;
+  border: 1px solid #55555a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 100px;
   display: inline-block;
-  margin-right: 60px;
+}
+
+.tray {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.tray-cell {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #55555a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 50px;
+  display: inline-block;
 }
