@@ -1,6 +1,6 @@
 import Board from "./Board";
 import Tray from "./Tray";
-import { ghosts } from "./gamedata";
+import { ghosts } from "./Ghosts";
 
 export default function App() {
   return (
