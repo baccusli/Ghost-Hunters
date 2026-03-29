@@ -1,11 +1,11 @@
-import { pieces } from "./gamedata";
+import { pieces } from "./Pieces";
 
 export default function Tray() {
   const trayBoard = Array.from({ length: 2 }, () => Array(2).fill("⬛"));
 
   pieces.forEach((piece) => {
     piece.cells.forEach((cell) => {
-      trayBoard[cell.y][cell.x] = "⬜";
+      trayBoard[cell.y][cell.x] = "🟦";
     });
 
     piece.lights.forEach((cell) => {
