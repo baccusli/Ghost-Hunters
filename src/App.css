@@ -10,6 +10,7 @@
 
 .board {
   text-align: center;
+  margin-bottom: 50px;
 }
 
 .board-row {
@@ -20,12 +21,35 @@
   width: 130px;
   height: 130px;
   border: 1px solid #55555a;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 100px;
-  display: inline-block;
 }
+
+.lit-ghost {
+  filter: drop-shadow(0 0 10px #fff59d)
+          drop-shadow(0 0 20px #ffd54f)
+          drop-shadow(0 0 30px #ffeb3b);
+}
+
+.covered-ghost {
+  background-color: rgba(0, 47, 255, 0.45);
+}
+
+.arrows {
+  display: block;
+  margin: 0 auto;
+  width: 50px;
+  aspect-ratio: 1/1;
+}
+
+.position-readout {
+  text-align: center;
+  font-size: 24px;
+  margin: 16px 0 0;
+}
+
 
 .tray {
   text-align: center;
@@ -36,9 +60,8 @@
   width: 130px;
   height: 130px;
   border: 1px solid #55555a;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 100px;
-  display: inline-block;
 }

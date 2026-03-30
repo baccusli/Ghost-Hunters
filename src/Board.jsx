@@ -1,44 +1,36 @@
-import { pieces } from "./Pieces";
+import { checkPiecePlacement, pieces } from "./Pieces";
 
-export default function Board({ ghosts }) {
-    const board = Array.from({ length: 4 }, () => Array(4).fill('⬛'));
+export default function Board({ ghosts, y }) {
+  const board = Array.from({ length: 4 }, () =>
+    Array.from({ length: 4 }, () => ({ icon: "⬛", lit: false, covered: false }))
+  );
 
-    ghosts.forEach((pos, key) => {
-        board[pos.y][pos.x] = '👻';
-    });
+  const x = 0;
 
-    pieces.forEach((piece) => {
-        let y = 0;
-        let x = 1;
-        const matches = piece.lightsGhost(ghosts, y, x);
-        const pieceCells = piece.pieceCell(y, x);
-        const lights = piece.lightsAt(y, x);
+  ghosts.forEach((ghost) => {
+    board[ghost.y][ghost.x] = { icon: "👹", lit: false, covered: false };
+  });
 
-        pieceCells.forEach((cell) => {
-            board[cell.y][cell.x] = '🟦';
-        });
+  pieces.forEach((piece) => {
+    if (piece.onBoard(y, x)) {
+      checkPiecePlacement(board, piece, ghosts, y, x);
+    }
+  });
 
-        lights.forEach((light) => {
-            board[light.y][light.x] = '💡';
-        });
-
-
-        matches.forEach((match) => {
-            board[match.y][match.x] = "👹";
-        });
-    });
-
-    return (
-        <div className="board">
-            {board.map((row, i) => (
-                <div key={i} className="board-row">
-                    {row.map((cell, j) => (
-                        <span key={j} className="board-cell">
-                            {cell}
-                        </span>
-                    ))}
-                </div>
-            ))}
+  return (
+    <div className="board">
+      {board.map((row, i) => (
+        <div key={i} className="board-row">
+          {row.map((cell, j) => (
+            <span
+              key={j}
+              className={`board-cell ${cell.covered ? "covered-ghost" : ""} ${cell.lit ? "lit-ghost" : ""}`.trim()}
+            >
+              {cell.icon}
+            </span>
+          ))}
         </div>
-    );
+      ))}
+    </div>
+  );
 }

@@ -30,11 +30,25 @@ export class Piece {
         this.lights.forEach((light) => {
             const lightY = originY + light.y;
             const lightX = originX + light.x;
-            ghosts.forEach((ghosts) => {
-                if (ghosts.y == lightY && ghosts.x == lightX) {
-                    results.push(ghosts);
+            ghosts.forEach((ghost) => {
+                if (ghost.y == lightY && ghost.x == lightX) {
+                    results.push(ghost);
                 }
-            })
+            });
+        });
+        return results;
+    }
+
+    pieceOnGhost(ghosts, originY, originX) {
+        let results = [];
+        this.cells.forEach((cell) => {
+            const cellY = originY + cell.y;
+            const cellX = originX + cell.x;
+            ghosts.forEach((ghost) => {
+                if (ghost.y == cellY && ghost.x == cellX) {
+                    results.push(ghost);
+                }
+            });
         });
         return results;
     }
@@ -43,9 +57,32 @@ export class Piece {
         return this.cells.every((cell) => {
             const cellY = originY + cell.y;
             const cellX = originX + cell.x;
-            return !(cellY < 0 || cellY > 4 || cellX < 0 || cellX > 4);
+            return !(cellY < 0 || cellY > 3 || cellX < 0 || cellX > 3);
         });
     }
+}
+
+export function checkPiecePlacement(board, piece, ghosts, originY, originX) {
+    const matches = piece.lightsGhost(ghosts, originY, originX);
+    const pieceCells = piece.pieceCell(originY, originX);
+    const lights = piece.lightsAt(originY, originX);
+    const ghostPiece = piece.pieceOnGhost(ghosts, originY, originX);
+
+    pieceCells.forEach((cell) => {
+        board[cell.y][cell.x] = { icon: "🟦", lit: false, covered: false };
+    });
+
+    ghostPiece.forEach((ghost) => {
+        board[ghost.y][ghost.x] = { icon: "👹", lit: false, covered: true };
+    });
+
+    lights.forEach((light) => {
+        board[light.y][light.x] = { icon: "💡", lit: false, covered: false };
+    });
+
+    matches.forEach((match) => {
+        board[match.y][match.x] = { icon: "👹", lit: true, covered: false };
+    });
 }
 
 export const pieces = [
