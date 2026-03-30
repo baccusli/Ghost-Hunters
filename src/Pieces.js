@@ -85,6 +85,21 @@ export function checkPiecePlacement(board, piece, ghosts, originY, originX) {
     });
 }
 
+export function getPlacementBounds(boardSize = 4) {
+    const allCells = pieces.flatMap((piece) => piece.cells);
+    const minY = Math.min(...allCells.map((cell) => cell.y));
+    const maxY = Math.max(...allCells.map((cell) => cell.y));
+    const minX = Math.min(...allCells.map((cell) => cell.x));
+    const maxX = Math.max(...allCells.map((cell) => cell.x));
+
+    return {
+        minY: -minY,
+        maxY: boardSize - 1 - maxY,
+        minX: -minX,
+        maxX: boardSize - 1 - maxX,
+    };
+}
+
 export const pieces = [
     new Piece(
         'p1',

@@ -37,11 +37,29 @@
   background-color: rgba(0, 47, 255, 0.45);
 }
 
-.arrows {
-  display: block;
-  margin: 0 auto;
-  width: 50px;
-  aspect-ratio: 1/1;
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.controls-row {
+  display: flex;
+  gap: 48px;
+}
+
+.arrow-button {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid #55555a;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  line-height: 1;
 }
 
 .position-readout {

@@ -1,11 +1,9 @@
 import { checkPiecePlacement, pieces } from "./Pieces";
 
-export default function Board({ ghosts, y }) {
+export default function Board({ ghosts, y, x }) {
   const board = Array.from({ length: 4 }, () =>
     Array.from({ length: 4 }, () => ({ icon: "⬛", lit: false, covered: false }))
   );
-
-  const x = 0;
 
   ghosts.forEach((ghost) => {
     board[ghost.y][ghost.x] = { icon: "👹", lit: false, covered: false };
