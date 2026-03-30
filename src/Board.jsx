@@ -1,4 +1,4 @@
-import { Piece, pieces } from "./Pieces";
+import { pieces } from "./Pieces";
 
 export default function Board({ ghosts }) {
     const board = Array.from({ length: 4 }, () => Array(4).fill('⬛'));
@@ -8,10 +8,23 @@ export default function Board({ ghosts }) {
     });
 
     pieces.forEach((piece) => {
-        const matches = piece.lightsGhost(ghosts, 0, 1);
+        let y = 0;
+        let x = 1;
+        const matches = piece.lightsGhost(ghosts, y, x);
+        const pieceCells = piece.pieceCell(y, x);
+        const lights = piece.lightsAt(y, x);
+
+        pieceCells.forEach((cell) => {
+            board[cell.y][cell.x] = '🟦';
+        });
+
+        lights.forEach((light) => {
+            board[light.y][light.x] = '💡';
+        });
+
 
         matches.forEach((match) => {
-        board[match.y][match.x] = "👹";
+            board[match.y][match.x] = "👹";
         });
     });
 

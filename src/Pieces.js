@@ -5,6 +5,26 @@ export class Piece {
         this.lights = lights;
     }
     
+    pieceCell(originY, originX) {
+        let results = [];
+        this.cells.forEach((cell) => {
+            const cellY = originY + cell.y;
+            const cellX = originX + cell.x;
+            results.push({ y: cellY, x: cellX });
+        });
+        return results;
+    }
+
+    lightsAt(originY, originX) {
+        let results = [];
+        this.lights.forEach((light) => {
+            const lightY = originY + light.y;
+            const lightX = originX + light.x;
+            results.push({ y: lightY, x: lightX });
+        });
+        return results;
+    }
+
     lightsGhost(ghosts, originY, originX) {
         let results = [];
         this.lights.forEach((light) => {
@@ -17,6 +37,14 @@ export class Piece {
             })
         });
         return results;
+    }
+
+    onBoard(originY, originX) {
+        return this.cells.every((cell) => {
+            const cellY = originY + cell.y;
+            const cellX = originX + cell.x;
+            return !(cellY < 0 || cellY > 4 || cellX < 0 || cellX > 4);
+        });
     }
 }
 
@@ -33,17 +61,3 @@ export const pieces = [
         ],
     ),
 ];
-
-/*
-function findCoords(matrix, target) {
-  let results = [];
-  for (let r = 0; r < matrix.length; r++) {
-    for (let c = 0; c < matrix[r].length; c++) {
-      if (matrix[r][c] === target) {
-        results.push([r, c]);
-      }
-    }
-  }
-  return results;
-}
-*/
