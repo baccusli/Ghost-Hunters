@@ -1,8 +1,9 @@
 export class Piece {
-    constructor(id, cells, lights) {
+    constructor(id, cells, lights, selected = false) {
         this.id = id;
         this.cells = cells;
         this.lights = lights;
+        this.selected = selected;
     }
     
     pieceCell(originY, originX) {
@@ -105,11 +106,63 @@ export const pieces = [
         'p1',
         [
             { y: 0, x: 0 },
+            { y: 1, x: 0 },
+        ],
+        [
+            { y: 0, x: 0 },
+        ],
+    ),
+    new Piece(
+        'p2',
+        [
+            { y: 0, x: 0 },
             { y: 0, x: 1 },
             { y: 1, x: 0 },
         ],
         [
             { y: 0, x: 0 },
+        ],
+    ),
+    new Piece(
+        'p3',
+        [
+            { y: 0, x: 1 },
+            { y: 1, x: 0 },
+            { y: 1, x: 1 },
+        ],
+        [
+            { y: 0, x: 1 },
+        ],
+    ),
+    new Piece(
+        'p4',
+        [
+            { y: 0, x: 0 },
+            { y: 1, x: 0 },
+            { y: 1, x: 1 },
+        ],
+        [
+            { y: 0, x: 0 },
+        ],
+    ),
+    new Piece(
+        'p5',
+        [
+            { y: 0, x: 0 },
+            { y: 0, x: 1 },
+        ],
+        [],
+    ),
+    new Piece(
+        'p6',
+        [
+            { y: 0, x: 1 },
+            { y: 1, x: 0 },
+            { y: 1, x: 1 },
+        ],
+        [
+            { y: 0, x: 1 },
+            { y: 1, x: 0 },
         ],
     ),
 ];

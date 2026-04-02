@@ -1,9 +1,10 @@
-import { pieces } from "./Pieces";
+export default function Tray({ piece }) {
+  const cells = piece ? [...piece.cells, ...piece.lights] : [];
+  const maxY = Math.max(0, ...cells.map((cell) => cell.y));
+  const maxX = Math.max(0, ...cells.map((cell) => cell.x));
+  const trayBoard = Array.from({ length: maxY + 1 }, () => Array(maxX + 1).fill("⬛"));
 
-export default function Tray() {
-  const trayBoard = Array.from({ length: 2 }, () => Array(2).fill("⬛"));
-
-  pieces.forEach((piece) => {
+  if (piece) {
     piece.cells.forEach((cell) => {
       trayBoard[cell.y][cell.x] = "🟦";
     });
@@ -11,7 +12,7 @@ export default function Tray() {
     piece.lights.forEach((cell) => {
       trayBoard[cell.y][cell.x] = "💡";
     });
-  });
+  }
 
   return (
     <div className="tray">
