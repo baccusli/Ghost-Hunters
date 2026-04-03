@@ -86,12 +86,12 @@ export function checkPiecePlacement(board, piece, ghosts, originY, originX) {
     });
 }
 
-export function getPlacementBounds(boardSize = 4) {
-    const allCells = pieces.flatMap((piece) => piece.cells);
-    const minY = Math.min(...allCells.map((cell) => cell.y));
-    const maxY = Math.max(...allCells.map((cell) => cell.y));
-    const minX = Math.min(...allCells.map((cell) => cell.x));
-    const maxX = Math.max(...allCells.map((cell) => cell.x));
+export function getPlacementBounds(piece, boardSize = 4) {
+    const cells = piece.cells;
+    const minY = Math.min(...cells.map((cell) => cell.y));
+    const maxY = Math.max(...cells.map((cell) => cell.y));
+    const minX = Math.min(...cells.map((cell) => cell.x));
+    const maxX = Math.max(...cells.map((cell) => cell.x));
 
     return {
         minY: -minY,
@@ -112,6 +112,7 @@ export const pieces = [
             { y: 0, x: 0 },
         ],
     ),
+
     new Piece(
         'p2',
         [
@@ -123,6 +124,7 @@ export const pieces = [
             { y: 0, x: 0 },
         ],
     ),
+
     new Piece(
         'p3',
         [
@@ -134,6 +136,7 @@ export const pieces = [
             { y: 0, x: 1 },
         ],
     ),
+
     new Piece(
         'p4',
         [
@@ -145,6 +148,7 @@ export const pieces = [
             { y: 0, x: 0 },
         ],
     ),
+
     new Piece(
         'p5',
         [
@@ -153,6 +157,7 @@ export const pieces = [
         ],
         [],
     ),
+
     new Piece(
         'p6',
         [
