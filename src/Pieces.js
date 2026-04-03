@@ -1,9 +1,8 @@
 export class Piece {
-    constructor(id, cells, lights, selected = false) {
+    constructor(id, cells, lights) {
         this.id = id;
         this.cells = cells;
         this.lights = lights;
-        this.selected = selected;
     }
     
     pieceCell(originY, originX) {
