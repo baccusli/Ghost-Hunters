@@ -6,7 +6,7 @@ export default function Board({ ghosts, piece, y, x }) {
   );
 
   ghosts.forEach((ghost) => {
-    board[ghost.y][ghost.x] = { icon: "👹", lit: false, covered: false };
+    board[ghost.y][ghost.x] = { icon: "🐒", lit: false, covered: false };
   });
 
   if (piece?.onBoard(y, x)) {

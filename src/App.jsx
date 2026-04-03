@@ -6,32 +6,46 @@ import { ghosts } from "./Ghosts";
 import { getPlacementBounds, pieces } from "./Pieces";
 
 export default function App() {
-  const [y, setY] = useState(0);
-  const [x, setX] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [piecePositions, setPiecePositions] = useState(
+    pieces.map(() => ({ y: 0, x: 0 }))
+  );
+
   const selectedPiece = pieces[selectedIndex];
   const bounds = getPlacementBounds(selectedPiece);
+  const currentPosition = piecePositions[selectedIndex];
+  const y = currentPosition.y;
+  const x = currentPosition.x;
+
 
   function clampPosition(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
 
   function moveY(delta) {
-    setY((currentY) => clampPosition(currentY + delta, bounds.minY, bounds.maxY));
+    setPiecePositions((prev) =>
+      prev.map((pos, index) =>
+        index === selectedIndex
+          ? { ...pos, y: clampPosition(pos.y + delta, bounds.minY, bounds.maxY) }
+          : pos
+      )
+    );
   }
 
   function moveX(delta) {
-    setX((currentX) => clampPosition(currentX + delta, bounds.minX, bounds.maxX));
+    setPiecePositions((prev) =>
+      prev.map((pos, index) =>
+        index === selectedIndex
+          ? { ...pos, x: clampPosition(pos.x + delta, bounds.minX, bounds.maxX) }
+          : pos
+      )
+    );
   }
+
 
   function switchPiece(delta) {
     setSelectedIndex((currentIndex) => (currentIndex + delta + pieces.length) % pieces.length);
   }
-
-  useEffect(() => {
-    setY((currentY) => clampPosition(currentY, bounds.minY, bounds.maxY));
-    setX((currentX) => clampPosition(currentX, bounds.minX, bounds.maxX));
-  }, [bounds]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -86,7 +100,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1 className="title">Ghost Hunters</h1>
+      <h1 className="title">Monkey Hunters</h1>
       <Board ghosts={ghosts} piece={selectedPiece} y={y} x={x} />
       <div className="controls">
         <button type="button" className="arrow-button" onClick={() => moveY(-1)}>

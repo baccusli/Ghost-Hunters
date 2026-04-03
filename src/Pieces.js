@@ -1,8 +1,10 @@
 export class Piece {
-    constructor(id, cells, lights) {
+    constructor(id, cells, lights, y = 0, x = 0) {
         this.id = id;
         this.cells = cells;
         this.lights = lights;
+        this.y = y;
+        this.x = x;
     }
     
     pieceCell(originY, originX) {
@@ -73,7 +75,7 @@ export function checkPiecePlacement(board, piece, ghosts, originY, originX) {
     });
 
     ghostPiece.forEach((ghost) => {
-        board[ghost.y][ghost.x] = { icon: "👹", lit: false, covered: true };
+        board[ghost.y][ghost.x] = { icon: "🙉", lit: false, covered: true };
     });
 
     lights.forEach((light) => {
@@ -81,7 +83,7 @@ export function checkPiecePlacement(board, piece, ghosts, originY, originX) {
     });
 
     matches.forEach((match) => {
-        board[match.y][match.x] = { icon: "👹", lit: true, covered: false };
+        board[match.y][match.x] = { icon: "🙈", lit: true, covered: false };
     });
 }
 
