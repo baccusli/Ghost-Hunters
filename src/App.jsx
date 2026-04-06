@@ -10,13 +10,13 @@ export default function App() {
   const [piecePositions, setPiecePositions] = useState(
     pieces.map(() => ({ y: 0, x: 0 }))
   );
+  const [placedPieces, setPlacedPieces] = useState(pieces.map(() => false));
 
   const selectedPiece = pieces[selectedIndex];
   const bounds = getPlacementBounds(selectedPiece);
   const currentPosition = piecePositions[selectedIndex];
   const y = currentPosition.y;
   const x = currentPosition.x;
-
 
   function clampPosition(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -42,51 +42,68 @@ export default function App() {
     );
   }
 
-
   function switchPiece(delta) {
-    setSelectedIndex((currentIndex) => (currentIndex + delta + pieces.length) % pieces.length);
+    setSelectedIndex(
+      (currentIndex) => (currentIndex + delta + pieces.length) % pieces.length
+    );
+  }
+
+  function placeSelectedPiece() {
+    setPlacedPieces((prev) => {
+      if (prev[selectedIndex]) {
+        return prev;
+      }
+
+      const nextPlacedPieces = prev.map((placed, index) =>
+        index === selectedIndex ? true : placed
+      );
+
+      const nextIndex = nextPlacedPieces.findIndex(
+        (placed, index) => !placed && index > selectedIndex
+      );
+      const fallbackIndex = nextPlacedPieces.findIndex((placed) => !placed);
+
+      if (nextIndex !== -1) {
+        setSelectedIndex(nextIndex);
+      } else if (fallbackIndex !== -1) {
+        setSelectedIndex(fallbackIndex);
+      }
+
+      return nextPlacedPieces;
+    });
   }
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       switch (e.key) {
         case "ArrowUp":
-          moveY(-1);
-          break;
-        case "ArrowDown":
-          moveY(1);
-          break;
-        case "ArrowLeft":
-          moveX(-1);
-          break;
-        case "ArrowRight":
-          moveX(1);
-          break;
         case "w":
           moveY(-1);
           break;
+        case "ArrowDown":
         case "s":
           moveY(1);
           break;
+        case "ArrowLeft":
         case "a":
           moveX(-1);
           break;
+        case "ArrowRight":
         case "d":
           moveX(1);
           break;
         case "q":
-          switchPiece(-1);
-          break;
-        case "e":
-          switchPiece(1);
-          break;
-        default:
-          break;
         case "PageUp":
           switchPiece(-1);
           break;
+        case "e":
         case "PageDown":
           switchPiece(1);
+          break;
+        case "Enter":
+          placeSelectedPiece();
+          break;
+        default:
           break;
       }
     };
@@ -96,12 +113,32 @@ export default function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [bounds]);
+  }, [bounds, selectedIndex, placedPieces]);
+
+  const placedPieceData = pieces
+    .map((piece, index) => ({
+      piece,
+      ...piecePositions[index],
+      placed: placedPieces[index],
+    }))
+    .filter((pieceData) => pieceData.placed);
+
+  const previewPiece = placedPieces[selectedIndex]
+    ? null
+    : {
+        piece: selectedPiece,
+        y,
+        x,
+      };
 
   return (
     <div className="app">
       <h1 className="title">Monkey Hunters</h1>
-      <Board ghosts={ghosts} piece={selectedPiece} y={y} x={x} />
+      <Board
+        ghosts={ghosts}
+        placedPieces={placedPieceData}
+        previewPiece={previewPiece}
+      />
       <div className="controls">
         <button type="button" className="arrow-button" onClick={() => moveY(-1)}>
           ▲
@@ -122,11 +159,15 @@ export default function App() {
         </button>
 
         <button type="button" className="piece-switch" onClick={() => switchPiece(1)}>
-          Switch to next piece
+          <b>Switch to next piece</b>
         </button>
 
         <button type="button" className="piece-switch" onClick={() => switchPiece(-1)}>
-          Switch to previous piece
+          <b>Switch to previous piece</b>
+        </button>
+
+        <button type="button" className="piece-switch" onClick={placeSelectedPiece}>
+          <b>Place piece</b>
         </button>
       </div>
       <Tray piece={selectedPiece} />
