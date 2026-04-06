@@ -48,6 +48,27 @@ export default function App() {
     );
   }
 
+  function checkOverlap(pieceIndex, originY, originX) {
+    const selectedPieceCells = pieces[pieceIndex].pieceCell(originY, originX);
+    const occupiedCells = new Set();
+
+    placedPieces.forEach((placed, index) => {
+      if (!placed || index === pieceIndex) {
+        return;
+      }
+
+      pieces[index]
+        .pieceCell(piecePositions[index].y, piecePositions[index].x)
+        .forEach((cell) => {
+          occupiedCells.add(`${cell.y},${cell.x}`);
+        });
+    });
+
+    return selectedPieceCells.some((cell) =>
+      occupiedCells.has(`${cell.y},${cell.x}`)
+    );
+  }
+
   function placeSelectedPiece() {
     setPlacedPieces((prev) => {
       if (prev[selectedIndex]) {
@@ -72,6 +93,19 @@ export default function App() {
       return nextPlacedPieces;
     });
   }
+
+  function tryPlaceSelectedPiece(showAlert = false) {
+    if (checkOverlap(selectedIndex, y, x)) {
+      if (showAlert) {
+        alert("Piece overlaps with another piece!");
+      }
+
+      return;
+    }
+
+    placeSelectedPiece();
+  }
+
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -101,7 +135,7 @@ export default function App() {
           switchPiece(1);
           break;
         case "Enter":
-          placeSelectedPiece();
+          tryPlaceSelectedPiece();
           break;
         default:
           break;
@@ -113,7 +147,7 @@ export default function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [bounds, selectedIndex, placedPieces]);
+  }, [bounds, selectedIndex, placedPieces, piecePositions, x, y]);
 
   const placedPieceData = pieces
     .map((piece, index) => ({
@@ -166,7 +200,13 @@ export default function App() {
           <b>Switch to previous piece</b>
         </button>
 
-        <button type="button" className="piece-switch" onClick={placeSelectedPiece}>
+        <button
+          type="button"
+          className="piece-switch"
+          onClick={() => {
+            tryPlaceSelectedPiece(true);
+          }}
+        >
           <b>Place piece</b>
         </button>
       </div>
@@ -174,3 +214,10 @@ export default function App() {
     </div>
   );
 }
+<button type="button" className="piece-switch" onClick={() => {
+          if (checkOverlap(selectedIndex, y, x)) {
+            alert("Piece overlaps with another piece!");
+          } else {
+            placeSelectedPiece();
+          }
+        }}></button>

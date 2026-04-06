@@ -55,6 +55,20 @@ export class Piece {
         return results;
     }
 
+    checkOverlap(currentIndex, originY, originX) {
+        const currentCells = pieces[currentIndex].pieceCell(originY, originX);
+        for (let index = 0; index < 6; index++) {
+            if (index === currentIndex) {
+                continue;
+            }
+            let otherCells = pieces[index].pieceCell(pieces[index].y, pieces[index].x);
+            if (otherCells.some((otherCell) => currentCells.some((currentCell) => otherCell.y === currentCell.y && otherCell.x === currentCell.x))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     onBoard(originY, originX) {
         return this.cells.every((cell) => {
             const cellY = originY + cell.y;
