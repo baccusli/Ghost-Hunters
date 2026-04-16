@@ -12,6 +12,7 @@ export default function App() {
   );
   const [pieceRotations, setPieceRotations] = useState(pieces.map(() => 0));
   const [placedPieces, setPlacedPieces] = useState(pieces.map(() => false));
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const rotatedPieces = pieces.map((piece, index) =>
     piece.rotated(pieceRotations[index])
@@ -22,6 +23,7 @@ export default function App() {
     setPiecePositions(pieces.map(() => ({ y: 0, x: 0 })));
     setPieceRotations(pieces.map(() => 0));
     setPlacedPieces(pieces.map(() => false));
+    setElapsedSeconds(0);
   }
 
   const selectedPiece = rotatedPieces[selectedIndex];
@@ -54,6 +56,9 @@ export default function App() {
     .flat()
     .filter((cell) => cell.lit).length;
   const hasWon = litGhostCount >= ghosts.length;
+  const minutes = Math.floor(elapsedSeconds / 60);
+  const seconds = elapsedSeconds % 60;
+  const timerLabel = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   const selectedPieceNumber = selectedIndex + 1;
   const placedCount = placedPieces.filter(Boolean).length;
   const selectedPiecePlaced = placedPieces[selectedIndex];
@@ -191,6 +196,20 @@ export default function App() {
   }
 
   useEffect(() => {
+    if (hasWon) {
+      return undefined;
+    }
+
+    const timerId = window.setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [hasWon]);
+
+  useEffect(() => {
     const handleKeyDown = (e) => {
       if ([
         "r",
@@ -302,6 +321,11 @@ export default function App() {
               <span className="status-label">Selected Piece</span>
               <strong className="status-value">#{selectedPieceNumber}</strong>
             </div>
+
+            <div className="status-card">
+              <span className="status-label">Timer</span>
+              <strong className="status-value">{timerLabel}</strong>
+            </div>
           </div>
         </header>
 
@@ -314,7 +338,6 @@ export default function App() {
             <div className="panel-header">
               <div>
                 <p className="panel-label">Board</p>
-                <h2 className="panel-title">Ghost Grid</h2>
               </div>
               <span className="panel-badge">4 x 4 puzzle</span>
             </div>

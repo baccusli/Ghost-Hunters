@@ -140,13 +140,6 @@ button {
   margin-bottom: 22px;
 }
 
-.panel-title {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1.05;
-  color: #f8fafc;
-}
-
 .panel-badge,
 .selection-chip,
 .shortcut-pill {
