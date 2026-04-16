@@ -13,6 +13,20 @@
   margin-bottom: 50px;
 }
 
+.light-counter {
+  text-align: center;
+  font-size: 32px;
+  margin: 0 0 32px;
+}
+
+.win-message {
+  text-align: center;
+  font-size: 40px;
+  font-weight: 700;
+  color: #2e7d32;
+  margin: 0 0 32px;
+}
+
 .board-row {
   margin-bottom: 0px;
 }

@@ -1,6 +1,6 @@
 import { checkPiecePlacement } from "./Pieces";
 
-export default function Board({ ghosts, placedPieces, previewPiece }) {
+export function buildBoard(ghosts, placedPieces, previewPiece) {
   const board = Array.from({ length: 4 }, () =>
     Array.from({ length: 4 }, () => ({ icon: "⬛", lit: false, covered: false }))
   );
@@ -24,6 +24,12 @@ export default function Board({ ghosts, placedPieces, previewPiece }) {
       previewPiece.x
     );
   }
+
+  return board;
+}
+
+export default function Board({ ghosts, placedPieces, previewPiece }) {
+  const board = buildBoard(ghosts, placedPieces, previewPiece);
 
   return (
     <div className="board">

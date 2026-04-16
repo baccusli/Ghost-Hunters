@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import Board from "./Board";
+import Board, { buildBoard } from "./Board";
 import Tray from "./Tray";
 import { ghosts } from "./Ghosts";
 import { getPlacementBounds, pieces } from "./Pieces";
@@ -12,17 +12,47 @@ export default function App() {
   );
   const [placedPieces, setPlacedPieces] = useState(pieces.map(() => false));
 
+  function resetGame() {
+    setSelectedIndex(0);
+    setPiecePositions(pieces.map(() => ({ y: 0, x: 0 })));
+    setPlacedPieces(pieces.map(() => false));
+  }
+
   const selectedPiece = pieces[selectedIndex];
   const bounds = getPlacementBounds(selectedPiece);
   const currentPosition = piecePositions[selectedIndex];
   const y = currentPosition.y;
   const x = currentPosition.x;
 
+  const placedPieceData = pieces
+    .map((piece, index) => ({
+      piece,
+      ...piecePositions[index],
+      placed: placedPieces[index],
+    }))
+    .filter((pieceData) => pieceData.placed);
+
+  const previewPiece = placedPieces[selectedIndex]
+    ? null
+    : {
+        piece: selectedPiece,
+        y,
+        x,
+      };
+  const litGhostCount = buildBoard(ghosts, placedPieceData, previewPiece)
+    .flat()
+    .filter((cell) => cell.lit).length;
+  const hasWon = litGhostCount >= ghosts.length;
+
   function clampPosition(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
 
   function moveY(delta) {
+    if (hasWon) {
+      return;
+    }
+
     setPiecePositions((prev) =>
       prev.map((pos, index) =>
         index === selectedIndex
@@ -33,6 +63,10 @@ export default function App() {
   }
 
   function moveX(delta) {
+    if (hasWon) {
+      return;
+    }
+
     setPiecePositions((prev) =>
       prev.map((pos, index) =>
         index === selectedIndex
@@ -43,6 +77,10 @@ export default function App() {
   }
 
   function switchPiece(delta) {
+    if (hasWon) {
+      return;
+    }
+
     setSelectedIndex(
       (currentIndex) => (currentIndex + delta + pieces.length) % pieces.length
     );
@@ -95,6 +133,10 @@ export default function App() {
   }
 
   function tryPlaceSelectedPiece(showAlert = false) {
+    if (hasWon) {
+      return;
+    }
+
     if (checkOverlap(selectedIndex, y, x)) {
       if (showAlert) {
         alert("Piece overlaps with another piece!");
@@ -106,10 +148,13 @@ export default function App() {
     placeSelectedPiece();
   }
 
-
   useEffect(() => {
     const handleKeyDown = (e) => {
       switch (e.key) {
+        case "r":
+        case "R":
+          resetGame();
+          break;
         case "ArrowUp":
         case "w":
           moveY(-1);
@@ -147,56 +192,76 @@ export default function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [bounds, selectedIndex, placedPieces, piecePositions, x, y]);
-
-  const placedPieceData = pieces
-    .map((piece, index) => ({
-      piece,
-      ...piecePositions[index],
-      placed: placedPieces[index],
-    }))
-    .filter((pieceData) => pieceData.placed);
-
-  const previewPiece = placedPieces[selectedIndex]
-    ? null
-    : {
-        piece: selectedPiece,
-        y,
-        x,
-      };
+  }, [bounds, hasWon, selectedIndex, placedPieces, piecePositions, x, y]);
 
   return (
     <div className="app">
       <h1 className="title">Monkey Hunters</h1>
+      <p className="light-counter">
+        Lit ghost lights: {litGhostCount} / {ghosts.length}
+      </p>
+      {hasWon ? (
+        <p className="win-message">You win! Press R or use Reset to play again.</p>
+      ) : null}
       <Board
         ghosts={ghosts}
         placedPieces={placedPieceData}
         previewPiece={previewPiece}
       />
       <div className="controls">
-        <button type="button" className="arrow-button" onClick={() => moveY(-1)}>
+        <button
+          type="button"
+          className="arrow-button"
+          onClick={() => moveY(-1)}
+          disabled={hasWon}
+        >
           ▲
         </button>
 
         <div className="controls-row">
-          <button type="button" className="arrow-button" onClick={() => moveX(-1)}>
+          <button
+            type="button"
+            className="arrow-button"
+            onClick={() => moveX(-1)}
+            disabled={hasWon}
+          >
             ◀
           </button>
 
-          <button type="button" className="arrow-button" onClick={() => moveX(1)}>
+          <button
+            type="button"
+            className="arrow-button"
+            onClick={() => moveX(1)}
+            disabled={hasWon}
+          >
             ▶
           </button>
         </div>
 
-        <button type="button" className="arrow-button" onClick={() => moveY(1)}>
+        <button
+          type="button"
+          className="arrow-button"
+          onClick={() => moveY(1)}
+          disabled={hasWon}
+        >
           ▼
         </button>
 
-        <button type="button" className="piece-switch" onClick={() => switchPiece(1)}>
+        <button
+          type="button"
+          className="piece-switch"
+          onClick={() => switchPiece(1)}
+          disabled={hasWon}
+        >
           <b>Switch to next piece</b>
         </button>
 
-        <button type="button" className="piece-switch" onClick={() => switchPiece(-1)}>
+        <button
+          type="button"
+          className="piece-switch"
+          onClick={() => switchPiece(-1)}
+          disabled={hasWon}
+        >
           <b>Switch to previous piece</b>
         </button>
 
@@ -206,18 +271,16 @@ export default function App() {
           onClick={() => {
             tryPlaceSelectedPiece(true);
           }}
+          disabled={hasWon}
         >
           <b>Place piece</b>
+        </button>
+
+        <button type="button" className="piece-switch" onClick={resetGame}>
+          <b>Reset game</b>
         </button>
       </div>
       <Tray piece={selectedPiece} />
     </div>
   );
 }
-<button type="button" className="piece-switch" onClick={() => {
-          if (checkOverlap(selectedIndex, y, x)) {
-            alert("Piece overlaps with another piece!");
-          } else {
-            placeSelectedPiece();
-          }
-        }}></button>
