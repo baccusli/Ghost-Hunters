@@ -28,8 +28,28 @@ export function buildBoard(ghosts, placedPieces, previewPiece) {
   return board;
 }
 
-export default function Board({ ghosts, placedPieces, previewPiece }) {
+export default function Board({
+  ghosts,
+  placedPieces,
+  previewPiece,
+  selectedPiecePlacement,
+}) {
   const board = buildBoard(ghosts, placedPieces, previewPiece);
+  const selectedCells = new Set();
+
+  if (selectedPiecePlacement?.piece?.onBoard(selectedPiecePlacement.y, selectedPiecePlacement.x)) {
+    selectedPiecePlacement.piece
+      .pieceCell(selectedPiecePlacement.y, selectedPiecePlacement.x)
+      .forEach((cell) => {
+        selectedCells.add(`${cell.y},${cell.x}`);
+      });
+
+    selectedPiecePlacement.piece
+      .lightsAt(selectedPiecePlacement.y, selectedPiecePlacement.x)
+      .forEach((cell) => {
+        selectedCells.add(`${cell.y},${cell.x}`);
+      });
+  }
 
   return (
     <div className="board">
@@ -38,7 +58,14 @@ export default function Board({ ghosts, placedPieces, previewPiece }) {
           {row.map((cell, j) => (
             <span
               key={j}
-              className={`board-cell ${cell.covered ? "covered-ghost" : ""} ${cell.lit ? "lit-ghost" : ""}`.trim()}
+              className={[
+                "board-cell",
+                cell.covered ? "covered-ghost" : "",
+                cell.lit ? "lit-ghost" : "",
+                selectedCells.has(`${i},${j}`) ? "selected-piece-cell" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
             >
               {cell.icon}
             </span>

@@ -45,10 +45,18 @@ export default function App() {
         y,
         x,
       };
-  const litGhostCount = buildBoard(ghosts, placedPieceData, previewPiece)
+  const selectedPiecePlacement = {
+    piece: selectedPiece,
+    y,
+    x,
+  };
+  const litGhostCount = buildBoard(ghosts, placedPieceData, null)
     .flat()
     .filter((cell) => cell.lit).length;
   const hasWon = litGhostCount >= ghosts.length;
+  const selectedPieceNumber = selectedIndex + 1;
+  const placedCount = placedPieces.filter(Boolean).length;
+  const selectedPiecePlaced = placedPieces[selectedIndex];
 
   function clampPosition(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -167,7 +175,7 @@ export default function App() {
   }
 
   function tryPlaceSelectedPiece(showAlert = false) {
-    if (hasWon) {
+    if (hasWon || placedPieces[selectedIndex]) {
       return;
     }
 
@@ -184,6 +192,28 @@ export default function App() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if ([
+        "r",
+        "R",
+        "z",
+        "Z",
+        "ArrowUp",
+        "w",
+        "ArrowDown",
+        "s",
+        "ArrowLeft",
+        "a",
+        "ArrowRight",
+        "d",
+        "q",
+        "PageUp",
+        "e",
+        "PageDown",
+        "Enter",
+      ].includes(e.key)) {
+        e.preventDefault();
+      }
+
       switch (e.key) {
         case "r":
         case "R":
@@ -243,100 +273,202 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1 className="title">Monkey Hunters</h1>
-      <p className="light-counter">
-        Lit ghost lights: {litGhostCount} / {ghosts.length}
-      </p>
-      {hasWon ? (
-        <p className="win-message">You win! Press R or use Reset to play again.</p>
-      ) : null}
-      <Board
-        ghosts={ghosts}
-        placedPieces={placedPieceData}
-        previewPiece={previewPiece}
-      />
-      <div className="controls">
-        <button
-          type="button"
-          className="arrow-button"
-          onClick={() => moveY(-1)}
-          disabled={hasWon}
-        >
-          ▲
-        </button>
+      <div className="app-shell">
+        <header className="hero">
+          <div>
+            <h1 className="title">Monkey Hunters</h1>
+            <p className="subtitle">
+              Position each gadget, rotate it into place, and light up every ghost
+              on the board.
+            </p>
+          </div>
 
-        <div className="controls-row">
-          <button
-            type="button"
-            className="arrow-button"
-            onClick={() => moveX(-1)}
-            disabled={hasWon}
-          >
-            ◀
-          </button>
+          <div className="status-strip">
+            <div className="status-card status-card-primary">
+              <span className="status-label">Lit Ghosts</span>
+              <strong className="status-value">
+                {litGhostCount} / {ghosts.length}
+              </strong>
+            </div>
 
-          <button
-            type="button"
-            className="arrow-button"
-            onClick={() => moveX(1)}
-            disabled={hasWon}
-          >
-            ▶
-          </button>
-        </div>
+            <div className="status-card">
+              <span className="status-label">Placed Pieces</span>
+              <strong className="status-value">
+                {placedCount} / {pieces.length}
+              </strong>
+            </div>
 
-        <button
-          type="button"
-          className="arrow-button"
-          onClick={() => moveY(1)}
-          disabled={hasWon}
-        >
-          ▼
-        </button>
+            <div className="status-card">
+              <span className="status-label">Selected Piece</span>
+              <strong className="status-value">#{selectedPieceNumber}</strong>
+            </div>
+          </div>
+        </header>
 
-        <button
-          type="button"
-          className="piece-switch"
-          onClick={() => rotateSelectedPiece()}
-          disabled={hasWon || placedPieces[selectedIndex]}
-        >
-          <b>Rotate piece</b>
-        </button>
+        {hasWon ? (
+          <p className="win-message">You win! Press R or use Reset to play again.</p>
+        ) : null}
 
-        <button
-          type="button"
-          className="piece-switch"
-          onClick={() => switchPiece(1)}
-          disabled={hasWon}
-        >
-          <b>Switch to next piece</b>
-        </button>
+        <main className="game-layout">
+          <section className="board-panel">
+            <div className="panel-header">
+              <div>
+                <p className="panel-label">Board</p>
+                <h2 className="panel-title">Ghost Grid</h2>
+              </div>
+              <span className="panel-badge">4 x 4 puzzle</span>
+            </div>
+            <Board
+              ghosts={ghosts}
+              placedPieces={placedPieceData}
+              previewPiece={previewPiece}
+              selectedPiecePlacement={selectedPiecePlacement}
+            />
+          </section>
 
-        <button
-          type="button"
-          className="piece-switch"
-          onClick={() => switchPiece(-1)}
-          disabled={hasWon}
-        >
-          <b>Switch to previous piece</b>
-        </button>
+          <aside className="sidebar">
+            <section className="control-panel">
+              <div className="panel-header">
+                <div>
+                  <p className="panel-label">Controls</p>
+                  <h2 className="panel-title">Pilot The Selected Piece</h2>
+                </div>
+                <span
+                  className={`selection-chip ${selectedPiecePlaced ? "selection-chip-placed" : ""}`}
+                >
+                  {selectedPiecePlaced ? "Locked In" : "Ready To Move"}
+                </span>
+              </div>
 
-        <button
-          type="button"
-          className="piece-switch"
-          onClick={() => {
-            tryPlaceSelectedPiece(true);
-          }}
-          disabled={hasWon}
-        >
-          <b>Place piece</b>
-        </button>
+              <div className="piece-meta">
+                <div className="meta-card">
+                  <span className="meta-label">Position</span>
+                  <strong className="meta-value">{x}, {y}</strong>
+                </div>
+                <div className="meta-card">
+                  <span className="meta-label">Rotation</span>
+                  <strong className="meta-value">{pieceRotations[selectedIndex] * 90}deg</strong>
+                </div>
+              </div>
 
-        <button type="button" className="piece-switch" onClick={resetGame}>
-          <b>Reset game</b>
-        </button>
+              <div className="controls-grid">
+                <button
+                  type="button"
+                  className="control-button control-button-arrow"
+                  onClick={() => moveY(-1)}
+                  disabled={hasWon}
+                >
+                  ▲
+                </button>
+
+                <div className="controls-row">
+                  <button
+                    type="button"
+                    className="control-button control-button-arrow"
+                    onClick={() => moveX(-1)}
+                    disabled={hasWon}
+                  >
+                    ◀
+                  </button>
+
+                  <button
+                    type="button"
+                    className="control-button control-button-arrow"
+                    onClick={() => moveX(1)}
+                    disabled={hasWon}
+                  >
+                    ▶
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  className="control-button control-button-arrow"
+                  onClick={() => moveY(1)}
+                  disabled={hasWon}
+                >
+                  ▼
+                </button>
+              </div>
+
+              <div className="action-list">
+                <button
+                  type="button"
+                  className="control-button control-button-secondary"
+                  onClick={() => rotateSelectedPiece()}
+                  disabled={hasWon || placedPieces[selectedIndex]}
+                >
+                  Rotate Piece
+                </button>
+
+                <button
+                  type="button"
+                  className="control-button control-button-secondary"
+                  onClick={() => switchPiece(1)}
+                  disabled={hasWon}
+                >
+                  Next Piece
+                </button>
+
+                <button
+                  type="button"
+                  className="control-button control-button-secondary"
+                  onClick={() => switchPiece(-1)}
+                  disabled={hasWon}
+                >
+                  Previous Piece
+                </button>
+
+                <button
+                  type="button"
+                  className="control-button control-button-primary"
+                  onClick={() => {
+                    tryPlaceSelectedPiece(true);
+                  }}
+                  disabled={hasWon || selectedPiecePlaced}
+                >
+                  Place Piece
+                </button>
+
+                <button
+                  type="button"
+                  className="control-button control-button-ghost"
+                  onClick={resetGame}
+                >
+                  Reset Game
+                </button>
+              </div>
+            </section>
+
+            <section className="piece-panel">
+              <div className="panel-header">
+                <div>
+                  <p className="panel-label">Preview</p>
+                  <h2 className="panel-title">Selected Shape</h2>
+                </div>
+                <span className="panel-badge">Piece #{selectedPieceNumber}</span>
+              </div>
+              <Tray piece={selectedPiece} />
+            </section>
+
+            <section className="shortcut-panel">
+              <div className="panel-header">
+                <div>
+                  <p className="panel-label">Keyboard</p>
+                  <h2 className="panel-title">Quick Commands</h2>
+                </div>
+              </div>
+              <div className="shortcut-list">
+                <span className="shortcut-pill">WASD / Arrows move</span>
+                <span className="shortcut-pill">Z rotate</span>
+                <span className="shortcut-pill">Q / E switch</span>
+                <span className="shortcut-pill">Enter place</span>
+                <span className="shortcut-pill">R reset</span>
+              </div>
+            </section>
+          </aside>
+        </main>
       </div>
-      <Tray piece={selectedPiece} />
     </div>
   );
 }
