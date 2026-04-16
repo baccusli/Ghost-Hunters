@@ -10,21 +10,27 @@ export default function App() {
   const [piecePositions, setPiecePositions] = useState(
     pieces.map(() => ({ y: 0, x: 0 }))
   );
+  const [pieceRotations, setPieceRotations] = useState(pieces.map(() => 0));
   const [placedPieces, setPlacedPieces] = useState(pieces.map(() => false));
+
+  const rotatedPieces = pieces.map((piece, index) =>
+    piece.rotated(pieceRotations[index])
+  );
 
   function resetGame() {
     setSelectedIndex(0);
     setPiecePositions(pieces.map(() => ({ y: 0, x: 0 })));
+    setPieceRotations(pieces.map(() => 0));
     setPlacedPieces(pieces.map(() => false));
   }
 
-  const selectedPiece = pieces[selectedIndex];
+  const selectedPiece = rotatedPieces[selectedIndex];
   const bounds = getPlacementBounds(selectedPiece);
   const currentPosition = piecePositions[selectedIndex];
   const y = currentPosition.y;
   const x = currentPosition.x;
 
-  const placedPieceData = pieces
+  const placedPieceData = rotatedPieces
     .map((piece, index) => ({
       piece,
       ...piecePositions[index],
@@ -86,8 +92,36 @@ export default function App() {
     );
   }
 
+  function rotateSelectedPiece(delta = 1) {
+    if (hasWon || placedPieces[selectedIndex]) {
+      return;
+    }
+
+    const nextRotation = (pieceRotations[selectedIndex] + delta + 4) % 4;
+    const nextPiece = pieces[selectedIndex].rotated(nextRotation);
+    const nextBounds = getPlacementBounds(nextPiece);
+
+    setPieceRotations((prev) =>
+      prev.map((rotation, index) =>
+        index === selectedIndex ? nextRotation : rotation
+      )
+    );
+
+    setPiecePositions((prev) =>
+      prev.map((pos, index) =>
+        index === selectedIndex
+          ? {
+              ...pos,
+              y: clampPosition(pos.y, nextBounds.minY, nextBounds.maxY),
+              x: clampPosition(pos.x, nextBounds.minX, nextBounds.maxX),
+            }
+          : pos
+      )
+    );
+  }
+
   function checkOverlap(pieceIndex, originY, originX) {
-    const selectedPieceCells = pieces[pieceIndex].pieceCell(originY, originX);
+    const selectedPieceCells = rotatedPieces[pieceIndex].pieceCell(originY, originX);
     const occupiedCells = new Set();
 
     placedPieces.forEach((placed, index) => {
@@ -95,7 +129,7 @@ export default function App() {
         return;
       }
 
-      pieces[index]
+      rotatedPieces[index]
         .pieceCell(piecePositions[index].y, piecePositions[index].x)
         .forEach((cell) => {
           occupiedCells.add(`${cell.y},${cell.x}`);
@@ -155,6 +189,10 @@ export default function App() {
         case "R":
           resetGame();
           break;
+        case "z":
+        case "Z":
+          rotateSelectedPiece();
+          break;
         case "ArrowUp":
         case "w":
           moveY(-1);
@@ -192,7 +230,16 @@ export default function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [bounds, hasWon, selectedIndex, placedPieces, piecePositions, x, y]);
+  }, [
+    bounds,
+    hasWon,
+    piecePositions,
+    pieceRotations,
+    placedPieces,
+    selectedIndex,
+    x,
+    y,
+  ]);
 
   return (
     <div className="app">
@@ -245,6 +292,15 @@ export default function App() {
           disabled={hasWon}
         >
           ▼
+        </button>
+
+        <button
+          type="button"
+          className="piece-switch"
+          onClick={() => rotateSelectedPiece()}
+          disabled={hasWon || placedPieces[selectedIndex]}
+        >
+          <b>Rotate piece</b>
         </button>
 
         <button

@@ -6,6 +6,26 @@ export class Piece {
         this.y = y;
         this.x = x;
     }
+
+    rotated(turns = 1) {
+        const normalizedTurns = ((turns % 4) + 4) % 4;
+        let cells = this.cells.map((cell) => ({ ...cell }));
+        let lights = this.lights.map((light) => ({ ...light }));
+
+        for (let turn = 0; turn < normalizedTurns; turn += 1) {
+            cells = cells.map((cell) => ({ y: cell.x, x: -cell.y }));
+            lights = lights.map((light) => ({ y: light.x, x: -light.y }));
+
+            const allPoints = [...cells, ...lights];
+            const minY = Math.min(...allPoints.map((point) => point.y));
+            const minX = Math.min(...allPoints.map((point) => point.x));
+
+            cells = cells.map((cell) => ({ y: cell.y - minY, x: cell.x - minX }));
+            lights = lights.map((light) => ({ y: light.y - minY, x: light.x - minX }));
+        }
+
+        return new Piece(this.id, cells, lights, this.y, this.x);
+    }
     
     pieceCell(originY, originX) {
         let results = [];
