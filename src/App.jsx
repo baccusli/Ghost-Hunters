@@ -68,7 +68,7 @@ export default function App() {
   }
 
   function moveY(delta) {
-    if (hasWon) {
+    if (hasWon || placedPieces[selectedIndex]) {
       return;
     }
 
@@ -82,7 +82,7 @@ export default function App() {
   }
 
   function moveX(delta) {
-    if (hasWon) {
+    if (hasWon || placedPieces[selectedIndex]) {
       return;
     }
 
@@ -354,7 +354,7 @@ export default function App() {
               <div className="panel-header">
                 <div>
                   <p className="panel-label">Controls</p>
-                  <h2 className="panel-title">Pilot The Selected Piece</h2>
+                  <h2 className="panel-title">Move The Selected Piece</h2>
                 </div>
                 <span
                   className={`selection-chip ${selectedPiecePlaced ? "selection-chip-placed" : ""}`}
@@ -379,7 +379,7 @@ export default function App() {
                   type="button"
                   className="control-button control-button-arrow"
                   onClick={() => moveY(-1)}
-                  disabled={hasWon}
+                  disabled={hasWon || selectedPiecePlaced}
                 >
                   ▲
                 </button>
@@ -389,7 +389,7 @@ export default function App() {
                     type="button"
                     className="control-button control-button-arrow"
                     onClick={() => moveX(-1)}
-                    disabled={hasWon}
+                    disabled={hasWon || selectedPiecePlaced}
                   >
                     ◀
                   </button>
@@ -398,7 +398,7 @@ export default function App() {
                     type="button"
                     className="control-button control-button-arrow"
                     onClick={() => moveX(1)}
-                    disabled={hasWon}
+                    disabled={hasWon || selectedPiecePlaced}
                   >
                     ▶
                   </button>
@@ -408,7 +408,7 @@ export default function App() {
                   type="button"
                   className="control-button control-button-arrow"
                   onClick={() => moveY(1)}
-                  disabled={hasWon}
+                  disabled={hasWon || selectedPiecePlaced}
                 >
                   ▼
                 </button>
@@ -491,6 +491,51 @@ export default function App() {
             </section>
           </aside>
         </main>
+
+        <section className="piece-gallery-panel">
+          <div className="panel-header">
+            <div>
+              <p className="panel-label">Pieces</p>
+              <h2 className="panel-title">All Pieces</h2>
+            </div>
+            <span className="panel-badge">{pieces.length} total pieces</span>
+          </div>
+
+          <div className="piece-gallery-grid">
+            {rotatedPieces.map((piece, index) => {
+              const isSelected = index === selectedIndex;
+              const isPlaced = placedPieces[index];
+
+              return (
+                <button
+                  key={piece.id}
+                  type="button"
+                  className={[
+                    "piece-gallery-card",
+                    isSelected ? "piece-gallery-card-selected" : "",
+                    isPlaced ? "piece-gallery-card-placed" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={() => {
+                    if (!hasWon) {
+                      setSelectedIndex(index);
+                    }
+                  }}
+                  disabled={hasWon}
+                >
+                  <div className="piece-gallery-card-header">
+                    <span className="piece-gallery-title">Piece #{index + 1}</span>
+                    <span className="piece-gallery-state">
+                      {isPlaced ? "Placed" : isSelected ? "Selected" : "Available"}
+                    </span>
+                  </div>
+                  <Tray piece={piece} />
+                </button>
+              );
+            })}
+          </div>
+        </section>
       </div>
     </div>
   );
