@@ -55,12 +55,12 @@ export default function App() {
   const litGhostCount = buildBoard(ghosts, placedPieceData, null)
     .flat()
     .filter((cell) => cell.lit).length;
-  const hasWon = litGhostCount >= ghosts.length;
   const minutes = Math.floor(elapsedSeconds / 60);
   const seconds = elapsedSeconds % 60;
   const timerLabel = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   const selectedPieceNumber = selectedIndex + 1;
   const placedCount = placedPieces.filter(Boolean).length;
+  const hasWon = litGhostCount >= ghosts.length && placedCount === pieces.length;
   const selectedPiecePlaced = placedPieces[selectedIndex];
 
   function clampPosition(value, min, max) {
@@ -95,13 +95,25 @@ export default function App() {
     );
   }
 
+  function getNextUnplacedIndex(startIndex, delta, placedState = placedPieces) {
+    for (let step = 1; step <= pieces.length; step += 1) {
+      const nextIndex = (startIndex + delta * step + pieces.length) % pieces.length;
+
+      if (!placedState[nextIndex]) {
+        return nextIndex;
+      }
+    }
+
+    return startIndex;
+  }
+
   function switchPiece(delta) {
     if (hasWon) {
       return;
     }
 
-    setSelectedIndex(
-      (currentIndex) => (currentIndex + delta + pieces.length) % pieces.length
+    setSelectedIndex((currentIndex) =>
+      getNextUnplacedIndex(currentIndex, delta)
     );
   }
 
@@ -164,15 +176,10 @@ export default function App() {
         index === selectedIndex ? true : placed
       );
 
-      const nextIndex = nextPlacedPieces.findIndex(
-        (placed, index) => !placed && index > selectedIndex
-      );
-      const fallbackIndex = nextPlacedPieces.findIndex((placed) => !placed);
+      const nextIndex = getNextUnplacedIndex(selectedIndex, 1, nextPlacedPieces);
 
-      if (nextIndex !== -1) {
+      if (!nextPlacedPieces[nextIndex]) {
         setSelectedIndex(nextIndex);
-      } else if (fallbackIndex !== -1) {
-        setSelectedIndex(fallbackIndex);
       }
 
       return nextPlacedPieces;
@@ -518,11 +525,11 @@ export default function App() {
                     .filter(Boolean)
                     .join(" ")}
                   onClick={() => {
-                    if (!hasWon) {
+                    if (!hasWon && !isPlaced) {
                       setSelectedIndex(index);
                     }
                   }}
-                  disabled={hasWon}
+                  disabled={hasWon || isPlaced}
                 >
                   <div className="piece-gallery-card-header">
                     <span className="piece-gallery-title">Piece #{index + 1}</span>
