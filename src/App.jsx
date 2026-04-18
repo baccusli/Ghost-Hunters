@@ -399,6 +399,52 @@ export default function App() {
         ) : null}
 
         <main className="game-layout">
+          <section className="piece-gallery-panel piece-gallery-sidebar">
+            <div className="panel-header">
+              <div>
+                <p className="panel-label">Pieces</p>
+                <h2 className="panel-title">All Pieces</h2>
+              </div>
+              <span className="panel-badge">{pieces.length} total pieces</span>
+            </div>
+
+            <div className="piece-gallery-grid">
+              {rotatedPieces.map((piece, index) => {
+                const isSelected = index === selectedIndex;
+                const isPlaced = placedPieces[index];
+
+                return (
+                  <button
+                    key={piece.id}
+                    type="button"
+                    className={[
+                      "piece-gallery-card",
+                      isSelected ? "piece-gallery-card-selected" : "",
+                      isPlaced ? "piece-gallery-card-placed" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={() => {
+                      if (!hasWon && !isPlaced) {
+                        setSelectedIndex(index);
+                        updateFeedback(`Selected piece #${index + 1}.`, "info");
+                      }
+                    }}
+                    disabled={hasWon || isPlaced}
+                  >
+                    <div className="piece-gallery-card-header">
+                      <span className="piece-gallery-title">Piece #{index + 1}</span>
+                      <span className="piece-gallery-state">
+                        {isPlaced ? "Placed" : isSelected ? "Selected" : "Available"}
+                      </span>
+                    </div>
+                    <Tray piece={piece} className="tray-gallery" />
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
           <section className="board-panel">
             <div className="panel-header">
               <div>
@@ -414,41 +460,11 @@ export default function App() {
               selectedPiecePlacement={selectedPiecePlacement}
             />
 
-            <div className="board-focus-bar">
-              <div className="board-focus-copy">
-                <span className="focus-label">Current Action</span>
-                <strong className="focus-title">
-                  {selectedPiecePlaced
-                    ? `Piece #${selectedPieceNumber} is locked in`
-                    : `Place piece #${selectedPieceNumber}`}
-                </strong>
-                <p
-                  className={`feedback-text feedback-text-${feedback.tone}`}
-                  aria-live="polite"
-                >
-                  {feedback.message}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className="control-button control-button-primary control-button-hero"
-                onClick={() => {
-                  tryPlaceSelectedPiece(true);
-                }}
-                disabled={hasWon || selectedPiecePlaced}
-              >
-                Place Piece
-              </button>
-            </div>
-          </section>
-
-          <aside className="sidebar">
-            <section className="piece-panel">
-              <div className="panel-header">
+            <div className="board-tray-panel">
+              <div className="panel-header board-tray-header">
                 <div>
-                  <p className="panel-label">Preview</p>
-                  <h2 className="panel-title">Selected Shape</h2>
+                  <p className="panel-label">Active Piece</p>
+                  <h2 className="panel-title">Ready For Placement</h2>
                 </div>
                 <span
                   className={`selection-chip ${selectedPiecePlaced ? "selection-chip-placed" : ""}`}
@@ -464,9 +480,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="piece-preview-layout">
-                <Tray piece={selectedPiece} className="tray-preview" />
-
+              <div className="piece-preview-layout board-piece-preview-layout">
                 <div className="preview-actions">
                   <button
                     type="button"
@@ -504,148 +518,82 @@ export default function App() {
                     Next Piece
                   </button>
                 </div>
-              </div>
-            </section>
 
-            <section className="control-panel">
-              <div className="panel-header">
-                <div>
-                  <p className="panel-label">Movement</p>
-                  <h2 className="panel-title">Fine Positioning</h2>
-                </div>
-                <span className="panel-badge">WASD / Arrows</span>
+                <Tray piece={selectedPiece} className="tray-preview tray-board-preview" />
               </div>
+            </div>
 
-              <div className="controls-grid">
-                <button
-                  type="button"
-                  className="control-button control-button-arrow"
-                  onClick={() => moveY(-1)}
-                  disabled={hasWon || selectedPiecePlaced}
+            <div className="board-focus-bar">
+              <div className="board-focus-copy">
+                <span className="focus-label">Current Action</span>
+                <strong className="focus-title">
+                  {selectedPiecePlaced
+                    ? `Piece #${selectedPieceNumber} is locked in`
+                    : `Place piece #${selectedPieceNumber}`}
+                </strong>
+                <p
+                  className={`feedback-text feedback-text-${feedback.tone}`}
+                  aria-live="polite"
                 >
-                  ▲
-                </button>
-
-                <div className="controls-row">
-                  <button
-                    type="button"
-                    className="control-button control-button-arrow"
-                    onClick={() => moveX(-1)}
-                    disabled={hasWon || selectedPiecePlaced}
-                  >
-                    ◀
-                  </button>
-
-                  <button
-                    type="button"
-                    className="control-button control-button-arrow"
-                    onClick={() => moveX(1)}
-                    disabled={hasWon || selectedPiecePlaced}
-                  >
-                    ▶
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  className="control-button control-button-arrow"
-                  onClick={() => moveY(1)}
-                  disabled={hasWon || selectedPiecePlaced}
-                >
-                  ▼
-                </button>
+                  {feedback.message}
+                </p>
               </div>
 
-              <div className="movement-helper">
-                Use the directional pad to nudge the active piece before placing it.
-              </div>
-
-              <div className="action-list compact-action-list">
-                <button
-                  type="button"
-                  className="control-button control-button-ghost control-button-icon"
-                  onClick={() => setSettingsOpen((open) => !open)}
-                  aria-expanded={settingsOpen}
-                >
-                  ⚙ Settings
-                </button>
-
-                {settingsOpen ? (
-                  <button
-                    type="button"
-                    className="control-button control-button-ghost"
-                    onClick={resetGame}
-                  >
-                    Reset Game
-                  </button>
-                ) : null}
-              </div>
-            </section>
-
-            <section className="shortcut-panel">
-              <div className="panel-header">
-                <div>
-                  <p className="panel-label">Keyboard</p>
-                  <h2 className="panel-title">Quick Commands</h2>
-                </div>
-                <span className="panel-badge">Fast play</span>
-              </div>
-              <div className="shortcut-list">
-                <span className="shortcut-pill">WASD / Arrows move</span>
-                <span className="shortcut-pill">Z rotate right</span>
-                <span className="shortcut-pill">Q / E switch</span>
-                <span className="shortcut-pill">Enter place</span>
-                <span className="shortcut-pill">R reset</span>
-              </div>
-            </section>
-          </aside>
+              <button
+                type="button"
+                className="control-button control-button-primary control-button-hero"
+                onClick={() => {
+                  tryPlaceSelectedPiece(true);
+                }}
+                disabled={hasWon || selectedPiecePlaced}
+              >
+                Place Piece
+              </button>
+            </div>
+          </section>
         </main>
 
-        <section className="piece-gallery-panel">
-          <div className="panel-header">
-            <div>
-              <p className="panel-label">Pieces</p>
-              <h2 className="panel-title">All Pieces</h2>
-            </div>
-            <span className="panel-badge">{pieces.length} total pieces</span>
-          </div>
+        <aside className="sidebar sidebar-bottom">
+          <section className="shortcut-panel">
+            <div className="action-list compact-action-list">
+              <button
+                type="button"
+                className="control-button control-button-ghost control-button-icon"
+                onClick={() => setSettingsOpen((open) => !open)}
+                aria-expanded={settingsOpen}
+              >
+                ⚙ Settings
+              </button>
 
-          <div className="piece-gallery-grid">
-            {rotatedPieces.map((piece, index) => {
-              const isSelected = index === selectedIndex;
-              const isPlaced = placedPieces[index];
-
-              return (
+              {settingsOpen ? (
                 <button
-                  key={piece.id}
                   type="button"
-                  className={[
-                    "piece-gallery-card",
-                    isSelected ? "piece-gallery-card-selected" : "",
-                    isPlaced ? "piece-gallery-card-placed" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={() => {
-                    if (!hasWon && !isPlaced) {
-                      setSelectedIndex(index);
-                      updateFeedback(`Selected piece #${index + 1}.`, "info");
-                    }
-                  }}
-                  disabled={hasWon || isPlaced}
+                  className="control-button control-button-ghost"
+                  onClick={resetGame}
                 >
-                  <div className="piece-gallery-card-header">
-                    <span className="piece-gallery-title">Piece #{index + 1}</span>
-                    <span className="piece-gallery-state">
-                      {isPlaced ? "Placed" : isSelected ? "Selected" : "Available"}
-                    </span>
-                  </div>
-                  <Tray piece={piece} className="tray-gallery" />
+                  Reset Game
                 </button>
-              );
-            })}
-          </div>
-        </section>
+              ) : null}
+            </div>
+          </section>
+
+          <section className="shortcut-panel">
+            <div className="panel-header">
+              <div>
+                <p className="panel-label">Keyboard</p>
+                <h2 className="panel-title">Quick Commands</h2>
+              </div>
+              <span className="panel-badge">Fast play</span>
+            </div>
+            <div className="shortcut-list">
+              <span className="shortcut-pill">WASD / Arrows move</span>
+              <span className="shortcut-pill">Z rotate right</span>
+              <span className="shortcut-pill">Q / E switch</span>
+              <span className="shortcut-pill">Enter place</span>
+              <span className="shortcut-pill">R reset</span>
+            </div>
+          </section>
+        </aside>
       </div>
     </div>
   );
