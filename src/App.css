@@ -297,6 +297,27 @@ button {
   transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
 }
 
+.board-drag-active .board-cell-droppable {
+  border-color: rgba(125, 211, 252, 0.34);
+}
+
+.board-cell-placed-piece {
+  cursor: grab;
+}
+
+.board-cell-placed-piece:active {
+  cursor: grabbing;
+}
+
+.board-cell-drag-hover {
+  border-color: rgba(103, 232, 249, 0.98);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 2px rgba(34, 211, 238, 0.5),
+    0 0 24px rgba(34, 211, 238, 0.18);
+  transform: translateY(-1px);
+}
+
 .selected-piece-cell {
   border-color: rgba(103, 232, 249, 0.95);
   box-shadow:
@@ -337,6 +358,51 @@ button {
 
 .compact-action-list {
   justify-items: start;
+}
+
+.settings-block {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.settings-help {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.mode-toggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.mode-toggle-button {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  padding: 12px 14px;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.7);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.mode-toggle-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(125, 211, 252, 0.45);
+}
+
+.mode-toggle-button-active {
+  color: var(--accent-action-text);
+  border-color: rgba(251, 191, 36, 0.45);
+  background: linear-gradient(135deg, var(--accent-action-start), var(--accent-action-end));
+  box-shadow: 0 14px 30px rgba(249, 115, 22, 0.22);
 }
 
 .control-button {
@@ -473,6 +539,24 @@ button {
   gap: 12px;
 }
 
+.tray-drag-shell {
+  display: grid;
+  width: max-content;
+  cursor: grab;
+}
+
+.tray-drag-shell:active {
+  cursor: grabbing;
+}
+
+.tray-drag-shell-disabled {
+  cursor: default;
+}
+
+.tray-gallery-drag-shell {
+  justify-self: start;
+}
+
 .tray-board-preview {
   justify-self: end;
   align-self: start;
@@ -518,10 +602,28 @@ button {
   font-size: var(--tray-font-size);
 }
 
+.tray .tray-cell-empty {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
 .shortcut-list {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.rules-list {
+  display: grid;
+  gap: 12px;
+}
+
+.rule-item {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #e2e8f0;
 }
 
 .shortcut-pill {
