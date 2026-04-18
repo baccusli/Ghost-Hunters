@@ -6,7 +6,7 @@ export function buildBoard(ghosts, placedPieces, previewPiece) {
   );
 
   ghosts.forEach((ghost) => {
-    board[ghost.y][ghost.x] = { icon: "🐒", lit: false, covered: false };
+    board[ghost.y][ghost.x] = { icon: "👻", lit: false, covered: false };
   });
 
   placedPieces.forEach(({ piece, y, x }) => {

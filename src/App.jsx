@@ -360,7 +360,7 @@ export default function App() {
       <div className="app-shell">
         <header className="hero">
           <div>
-            <h1 className="title">Monkey Hunters</h1>
+            <h1 className="title">Ghost Hunters</h1>
             <p className="subtitle">
               Position each gadget, rotate it into place, and light up every ghost
               on the board.

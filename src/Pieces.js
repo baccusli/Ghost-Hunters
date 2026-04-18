@@ -109,7 +109,7 @@ export function checkPiecePlacement(board, piece, ghosts, originY, originX) {
     });
 
     ghostPiece.forEach((ghost) => {
-        board[ghost.y][ghost.x] = { icon: "🙉", lit: false, covered: true };
+        board[ghost.y][ghost.x] = { icon: "👻", lit: false, covered: true };
     });
 
     lights.forEach((light) => {
@@ -117,7 +117,7 @@ export function checkPiecePlacement(board, piece, ghosts, originY, originX) {
     });
 
     matches.forEach((match) => {
-        board[match.y][match.x] = { icon: "🙈", lit: true, covered: false };
+        board[match.y][match.x] = { icon: "👻", lit: true, covered: false };
     });
 }
 
