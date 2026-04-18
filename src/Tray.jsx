@@ -1,4 +1,4 @@
-export default function Tray({ piece }) {
+export default function Tray({ piece, className = "" }) {
   const cells = piece ? [...piece.cells, ...piece.lights] : [];
   const maxY = Math.max(0, ...cells.map((cell) => cell.y));
   const maxX = Math.max(0, ...cells.map((cell) => cell.x));
@@ -15,7 +15,7 @@ export default function Tray({ piece }) {
   }
 
   return (
-    <div className="tray">
+    <div className={["tray", className].filter(Boolean).join(" ")}>
       {trayBoard.map((row, i) => (
         <div key={i} className="tray-row">
           {row.map((cell, j) => (

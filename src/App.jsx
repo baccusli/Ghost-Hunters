@@ -13,6 +13,11 @@ export default function App() {
   const [pieceRotations, setPieceRotations] = useState(pieces.map(() => 0));
   const [placedPieces, setPlacedPieces] = useState(pieces.map(() => false));
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [feedback, setFeedback] = useState({
+    tone: "info",
+    message: "Move and rotate the selected piece, then place it on the board.",
+  });
 
   const rotatedPieces = pieces.map((piece, index) =>
     piece.rotated(pieceRotations[index])
@@ -24,6 +29,11 @@ export default function App() {
     setPieceRotations(pieces.map(() => 0));
     setPlacedPieces(pieces.map(() => false));
     setElapsedSeconds(0);
+    setSettingsOpen(false);
+    setFeedback({
+      tone: "info",
+      message: "Fresh board. Start with the highlighted piece.",
+    });
   }
 
   const selectedPiece = rotatedPieces[selectedIndex];
@@ -62,6 +72,11 @@ export default function App() {
   const placedCount = placedPieces.filter(Boolean).length;
   const hasWon = litGhostCount >= ghosts.length && placedCount === pieces.length;
   const selectedPiecePlaced = placedPieces[selectedIndex];
+  const allPiecesPlaced = placedCount === pieces.length;
+
+  function updateFeedback(message, tone = "info") {
+    setFeedback({ message, tone });
+  }
 
   function clampPosition(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -112,9 +127,15 @@ export default function App() {
       return;
     }
 
-    setSelectedIndex((currentIndex) =>
-      getNextUnplacedIndex(currentIndex, delta)
-    );
+    setSelectedIndex((currentIndex) => {
+      const nextIndex = getNextUnplacedIndex(currentIndex, delta);
+
+      if (nextIndex !== currentIndex) {
+        updateFeedback(`Selected piece #${nextIndex + 1}.`, "info");
+      }
+
+      return nextIndex;
+    });
   }
 
   function rotateSelectedPiece(delta = 1) {
@@ -142,6 +163,11 @@ export default function App() {
             }
           : pos
       )
+    );
+
+    updateFeedback(
+      `Piece #${selectedPieceNumber} rotated to ${nextRotation * 90}deg.`,
+      "info"
     );
   }
 
@@ -182,6 +208,13 @@ export default function App() {
         setSelectedIndex(nextIndex);
       }
 
+      updateFeedback(
+        !nextPlacedPieces[nextIndex]
+          ? `Piece #${selectedPieceNumber} placed. Piece #${nextIndex + 1} is ready.`
+          : `Piece #${selectedPieceNumber} placed. All pieces are on the board.`,
+        "success"
+      );
+
       return nextPlacedPieces;
     });
   }
@@ -196,6 +229,7 @@ export default function App() {
         alert("Piece overlaps with another piece!");
       }
 
+      updateFeedback("That placement overlaps another piece. Try a different spot.", "error");
       return;
     }
 
@@ -204,6 +238,7 @@ export default function App() {
 
   useEffect(() => {
     if (hasWon) {
+      updateFeedback("Every ghost is lit. Puzzle solved!", "success");
       return undefined;
     }
 
@@ -215,6 +250,29 @@ export default function App() {
       window.clearInterval(timerId);
     };
   }, [hasWon]);
+
+  useEffect(() => {
+    if (!hasWon && (feedback.tone === "error" || feedback.tone === "success")) {
+      const timeoutId = window.setTimeout(() => {
+        setFeedback((current) =>
+          current.tone === "error" || current.tone === "success"
+            ? {
+                tone: "info",
+                message: selectedPiecePlaced
+                  ? `Piece #${selectedPieceNumber} is locked in. Choose another available piece.`
+                  : `Piece #${selectedPieceNumber} is active. Position it and place it on the board.`
+              }
+            : current
+        );
+      }, 2200);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+      };
+    }
+
+    return undefined;
+  }, [feedback.tone, hasWon, selectedPieceNumber, selectedPiecePlaced]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -345,6 +403,7 @@ export default function App() {
             <div className="panel-header">
               <div>
                 <p className="panel-label">Board</p>
+                <h2 className="panel-title">Light Every Ghost</h2>
               </div>
               <span className="panel-badge">4 x 4 puzzle</span>
             </div>
@@ -354,14 +413,42 @@ export default function App() {
               previewPiece={previewPiece}
               selectedPiecePlacement={selectedPiecePlacement}
             />
+
+            <div className="board-focus-bar">
+              <div className="board-focus-copy">
+                <span className="focus-label">Current Action</span>
+                <strong className="focus-title">
+                  {selectedPiecePlaced
+                    ? `Piece #${selectedPieceNumber} is locked in`
+                    : `Place piece #${selectedPieceNumber}`}
+                </strong>
+                <p
+                  className={`feedback-text feedback-text-${feedback.tone}`}
+                  aria-live="polite"
+                >
+                  {feedback.message}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="control-button control-button-primary control-button-hero"
+                onClick={() => {
+                  tryPlaceSelectedPiece(true);
+                }}
+                disabled={hasWon || selectedPiecePlaced}
+              >
+                Place Piece
+              </button>
+            </div>
           </section>
 
           <aside className="sidebar">
-            <section className="control-panel">
+            <section className="piece-panel">
               <div className="panel-header">
                 <div>
-                  <p className="panel-label">Controls</p>
-                  <h2 className="panel-title">Move The Selected Piece</h2>
+                  <p className="panel-label">Preview</p>
+                  <h2 className="panel-title">Selected Shape</h2>
                 </div>
                 <span
                   className={`selection-chip ${selectedPiecePlaced ? "selection-chip-placed" : ""}`}
@@ -372,13 +459,61 @@ export default function App() {
 
               <div className="piece-meta">
                 <div className="meta-card">
-                  <span className="meta-label">Position</span>
-                  <strong className="meta-value">{x}, {y}</strong>
+                  <span className="meta-label">Piece</span>
+                  <strong className="meta-value">#{selectedPieceNumber}</strong>
                 </div>
-                <div className="meta-card">
-                  <span className="meta-label">Rotation</span>
-                  <strong className="meta-value">{pieceRotations[selectedIndex] * 90}deg</strong>
+              </div>
+
+              <div className="piece-preview-layout">
+                <Tray piece={selectedPiece} className="tray-preview" />
+
+                <div className="preview-actions">
+                  <button
+                    type="button"
+                    className="control-button control-button-secondary"
+                    onClick={() => rotateSelectedPiece(-1)}
+                    disabled={hasWon || selectedPiecePlaced}
+                  >
+                    Rotate Left
+                  </button>
+
+                  <button
+                    type="button"
+                    className="control-button control-button-secondary"
+                    onClick={() => rotateSelectedPiece()}
+                    disabled={hasWon || selectedPiecePlaced}
+                  >
+                    Rotate Right
+                  </button>
+
+                  <button
+                    type="button"
+                    className="control-button control-button-secondary"
+                    onClick={() => switchPiece(-1)}
+                    disabled={hasWon || allPiecesPlaced}
+                  >
+                    Previous Piece
+                  </button>
+
+                  <button
+                    type="button"
+                    className="control-button control-button-secondary"
+                    onClick={() => switchPiece(1)}
+                    disabled={hasWon || allPiecesPlaced}
+                  >
+                    Next Piece
+                  </button>
                 </div>
+              </div>
+            </section>
+
+            <section className="control-panel">
+              <div className="panel-header">
+                <div>
+                  <p className="panel-label">Movement</p>
+                  <h2 className="panel-title">Fine Positioning</h2>
+                </div>
+                <span className="panel-badge">WASD / Arrows</span>
               </div>
 
               <div className="controls-grid">
@@ -421,64 +556,30 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="action-list">
-                <button
-                  type="button"
-                  className="control-button control-button-secondary"
-                  onClick={() => rotateSelectedPiece()}
-                  disabled={hasWon || placedPieces[selectedIndex]}
-                >
-                  Rotate Piece
-                </button>
-
-                <button
-                  type="button"
-                  className="control-button control-button-secondary"
-                  onClick={() => switchPiece(1)}
-                  disabled={hasWon}
-                >
-                  Next Piece
-                </button>
-
-                <button
-                  type="button"
-                  className="control-button control-button-secondary"
-                  onClick={() => switchPiece(-1)}
-                  disabled={hasWon}
-                >
-                  Previous Piece
-                </button>
-
-                <button
-                  type="button"
-                  className="control-button control-button-primary"
-                  onClick={() => {
-                    tryPlaceSelectedPiece(true);
-                  }}
-                  disabled={hasWon || selectedPiecePlaced}
-                >
-                  Place Piece
-                </button>
-
-                <button
-                  type="button"
-                  className="control-button control-button-ghost"
-                  onClick={resetGame}
-                >
-                  Reset Game
-                </button>
+              <div className="movement-helper">
+                Use the directional pad to nudge the active piece before placing it.
               </div>
-            </section>
 
-            <section className="piece-panel">
-              <div className="panel-header">
-                <div>
-                  <p className="panel-label">Preview</p>
-                  <h2 className="panel-title">Selected Shape</h2>
-                </div>
-                <span className="panel-badge">Piece #{selectedPieceNumber}</span>
+              <div className="action-list compact-action-list">
+                <button
+                  type="button"
+                  className="control-button control-button-ghost control-button-icon"
+                  onClick={() => setSettingsOpen((open) => !open)}
+                  aria-expanded={settingsOpen}
+                >
+                  ⚙ Settings
+                </button>
+
+                {settingsOpen ? (
+                  <button
+                    type="button"
+                    className="control-button control-button-ghost"
+                    onClick={resetGame}
+                  >
+                    Reset Game
+                  </button>
+                ) : null}
               </div>
-              <Tray piece={selectedPiece} />
             </section>
 
             <section className="shortcut-panel">
@@ -487,10 +588,11 @@ export default function App() {
                   <p className="panel-label">Keyboard</p>
                   <h2 className="panel-title">Quick Commands</h2>
                 </div>
+                <span className="panel-badge">Fast play</span>
               </div>
               <div className="shortcut-list">
                 <span className="shortcut-pill">WASD / Arrows move</span>
-                <span className="shortcut-pill">Z rotate</span>
+                <span className="shortcut-pill">Z rotate right</span>
                 <span className="shortcut-pill">Q / E switch</span>
                 <span className="shortcut-pill">Enter place</span>
                 <span className="shortcut-pill">R reset</span>
@@ -527,6 +629,7 @@ export default function App() {
                   onClick={() => {
                     if (!hasWon && !isPlaced) {
                       setSelectedIndex(index);
+                      updateFeedback(`Selected piece #${index + 1}.`, "info");
                     }
                   }}
                   disabled={hasWon || isPlaced}
@@ -537,7 +640,7 @@ export default function App() {
                       {isPlaced ? "Placed" : isSelected ? "Selected" : "Available"}
                     </span>
                   </div>
-                  <Tray piece={piece} />
+                  <Tray piece={piece} className="tray-gallery" />
                 </button>
               );
             })}
