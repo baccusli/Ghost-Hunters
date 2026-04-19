@@ -3,6 +3,7 @@ export default function GameHeader({
   ghostCount,
   placedCount,
   pieceCount,
+  moveCount,
   selectedPieceNumber,
   timerLabel,
 }) {
@@ -34,6 +35,11 @@ export default function GameHeader({
         <div className="status-card">
           <span className="status-label">Selected Piece</span>
           <strong className="status-value">#{selectedPieceNumber}</strong>
+        </div>
+
+        <div className="status-card">
+          <span className="status-label">Moves</span>
+          <strong className="status-value">{moveCount}</strong>
         </div>
 
         <div className="status-card">

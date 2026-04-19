@@ -5,7 +5,9 @@ import GameHeader from "./GameHeader";
 import GameSidebar from "./GameSidebar";
 import { ghosts } from "./Ghosts";
 import PieceGallery from "./PieceGallery";
+import SolvedCelebration from "./SolvedCelebration";
 import {
+  createInitialMoveCount,
   createInitialPiecePositions,
   createInitialPieceRotations,
   createInitialPlacedPieces,
@@ -18,6 +20,8 @@ import { getPlacementBounds, pieces } from "./Pieces";
 export default function App() {
   const dragImageRef = useRef(null);
   const dragMetaRef = useRef(null);
+  const dragStateRef = useRef(null);
+  const dragHoverCellRef = useRef(null);
   const startTimeRef = useRef(Date.now());
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [piecePositions, setPiecePositions] = useState(() =>
@@ -29,6 +33,7 @@ export default function App() {
   const [placedPieces, setPlacedPieces] = useState(() =>
     createInitialPlacedPieces(pieces)
   );
+  const [moveCount, setMoveCount] = useState(createInitialMoveCount);
   const [elapsedMilliseconds, setElapsedMilliseconds] = useState(0);
   const [timerStarted, setTimerStarted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -46,6 +51,7 @@ export default function App() {
     setPiecePositions(createInitialPiecePositions(pieces));
     setPieceRotations(createInitialPieceRotations(pieces));
     setPlacedPieces(createInitialPlacedPieces(pieces));
+    setMoveCount(createInitialMoveCount());
     startTimeRef.current = Date.now();
     setElapsedMilliseconds(0);
     setTimerStarted(false);
@@ -106,6 +112,10 @@ export default function App() {
     setFeedback({ message, tone });
   }
 
+  function recordMove() {
+    setMoveCount((current) => current + 1);
+  }
+
   function handleSelectPiece(index, isPlaced) {
     if (hasWon || isPlaced) {
       return;
@@ -132,6 +142,8 @@ export default function App() {
     dragImageRef.current?.remove();
     dragImageRef.current = null;
     dragMetaRef.current = null;
+    dragStateRef.current = null;
+    dragHoverCellRef.current = null;
     setDragState(null);
     setDragHoverCell(null);
   }
@@ -247,10 +259,17 @@ export default function App() {
       return;
     }
 
+    const nextY = clampPosition(currentPosition.y + delta, bounds.minY, bounds.maxY);
+
+    if (nextY === currentPosition.y) {
+      return;
+    }
+
+    recordMove();
     setPiecePositions((prev) =>
       prev.map((pos, index) =>
         index === selectedIndex
-          ? { ...pos, y: clampPosition(pos.y + delta, bounds.minY, bounds.maxY) }
+          ? { ...pos, y: nextY }
           : pos
       )
     );
@@ -261,10 +280,17 @@ export default function App() {
       return;
     }
 
+    const nextX = clampPosition(currentPosition.x + delta, bounds.minX, bounds.maxX);
+
+    if (nextX === currentPosition.x) {
+      return;
+    }
+
+    recordMove();
     setPiecePositions((prev) =>
       prev.map((pos, index) =>
         index === selectedIndex
-          ? { ...pos, x: clampPosition(pos.x + delta, bounds.minX, bounds.maxX) }
+          ? { ...pos, x: nextX }
           : pos
       )
     );
@@ -303,6 +329,7 @@ export default function App() {
       return;
     }
 
+    recordMove();
     const nextRotation = (pieceRotations[selectedIndex] + delta + 4) % 4;
     const nextPiece = pieces[selectedIndex].rotated(nextRotation);
     const nextBounds = getPlacementBounds(nextPiece);
@@ -376,9 +403,11 @@ export default function App() {
       droppedOnBoard: false,
       invalidBoardDrop: false,
     };
+    dragStateRef.current = { pieceIndex, anchor };
     const dragPreviewRect = dragPreview.getBoundingClientRect();
 
     setDragState({ pieceIndex, anchor });
+    dragHoverCellRef.current = null;
     setDragHoverCell(null);
     updateFeedback(
       source === "board"
@@ -443,43 +472,53 @@ export default function App() {
   function handlePieceDragEnd() {
     dragImageRef.current?.remove();
     dragImageRef.current = null;
-    if (
-      dragMetaRef.current?.source === "board" &&
-      !dragMetaRef.current.droppedOnBoard &&
-      !dragMetaRef.current.invalidBoardDrop
-    ) {
-      setPiecePlaced(dragMetaRef.current.pieceIndex, false);
-      setSelectedIndex(dragMetaRef.current.pieceIndex);
-      updateFeedback(
-        `Piece #${dragMetaRef.current.pieceIndex + 1} removed from the board.`,
-        "info"
-      );
-    }
 
-    dragMetaRef.current = null;
-    setDragState(null);
-    setDragHoverCell(null);
+    window.setTimeout(() => {
+      if (
+        dragMetaRef.current?.source === "board" &&
+        !dragMetaRef.current.droppedOnBoard &&
+        !dragMetaRef.current.invalidBoardDrop
+      ) {
+        recordMove();
+        setPiecePlaced(dragMetaRef.current.pieceIndex, false);
+        setSelectedIndex(dragMetaRef.current.pieceIndex);
+        updateFeedback(
+          `Piece #${dragMetaRef.current.pieceIndex + 1} removed from the board.`,
+          "info"
+        );
+      }
+
+      dragMetaRef.current = null;
+      dragStateRef.current = null;
+      dragHoverCellRef.current = null;
+      setDragState(null);
+      setDragHoverCell(null);
+    }, 0);
   }
 
   function handleBoardCellDragOver(event, cellY, cellX) {
-    if (!dragEnabled || !dragState) {
+    if (!dragEnabled || !(dragStateRef.current ?? dragState)) {
       return;
     }
 
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
+    const nextHoverCell = { y: cellY, x: cellX };
+    dragHoverCellRef.current = nextHoverCell;
     setDragHoverCell((current) =>
-      current?.y === cellY && current?.x === cellX ? current : { y: cellY, x: cellX }
+      current?.y === cellY && current?.x === cellX ? current : nextHoverCell
     );
   }
 
-  function handleBoardCellDrop(event, cellY, cellX) {
-    if (!dragEnabled || !dragState) {
+  function commitBoardDrop(event, cellY, cellX) {
+    const activeDragState = dragStateRef.current ?? dragState;
+
+    if (!dragEnabled || !activeDragState) {
       return;
     }
 
     event.preventDefault();
-    const { pieceIndex, anchor } = dragState;
+    const { pieceIndex, anchor } = activeDragState;
     const dragSource = dragMetaRef.current?.source;
     const nextPosition = resolveDropPosition(pieceIndex, cellY, cellX, anchor);
 
@@ -501,6 +540,16 @@ export default function App() {
     setSelectedIndex(pieceIndex);
     setPiecePosition(pieceIndex, nextPosition.y, nextPosition.x);
 
+    const currentDraggedPosition = piecePositions[pieceIndex];
+
+    if (
+      dragSource !== "board" ||
+      currentDraggedPosition.y !== nextPosition.y ||
+      currentDraggedPosition.x !== nextPosition.x
+    ) {
+      recordMove();
+    }
+
     if (dragSource === "board") {
       updateFeedback(`Piece #${pieceIndex + 1} moved to a new spot.`, "success");
     } else {
@@ -508,11 +557,43 @@ export default function App() {
     }
 
     setDragState(null);
+    dragStateRef.current = null;
+    dragHoverCellRef.current = null;
     setDragHoverCell(null);
+  }
+
+  function handleBoardCellDrop(event, cellY, cellX) {
+    commitBoardDrop(event, cellY, cellX);
+  }
+
+  function handleBoardDragOver(event) {
+    if (!dragEnabled || !(dragStateRef.current ?? dragState)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }
+
+  function handleBoardDrop(event) {
+    const dropTarget = event.target;
+
+    if (dropTarget instanceof Element && dropTarget.closest(".board-cell")) {
+      return;
+    }
+
+    const fallbackCell = dragHoverCellRef.current ?? dragHoverCell;
+
+    if (!fallbackCell) {
+      return;
+    }
+
+    commitBoardDrop(event, fallbackCell.y, fallbackCell.x);
   }
 
   function placeSelectedPiece() {
     startTimer();
+    recordMove();
     lockPieceInPlace(selectedIndex);
   }
 
@@ -688,14 +769,17 @@ export default function App() {
           ghostCount={ghosts.length}
           placedCount={placedCount}
           pieceCount={pieces.length}
+          moveCount={moveCount}
           selectedPieceNumber={selectedPieceNumber}
           timerLabel={timerLabel}
         />
 
         {hasWon ? (
-          <p className="win-message">
-            You win in {finishTimeLabel}! Press R or use Reset to play again.
-          </p>
+          <SolvedCelebration
+            finishTimeLabel={finishTimeLabel}
+            moveCount={moveCount}
+            onResetGame={resetGame}
+          />
         ) : null}
 
         <main className="game-layout">
@@ -727,6 +811,8 @@ export default function App() {
               dragPreviewPlacement={dragPreviewPlacement}
               onPlacedPieceDragStart={dragEnabled ? handleBoardPieceDragStart : undefined}
               onPlacedPieceDragEnd={dragEnabled ? handlePieceDragEnd : undefined}
+              onBoardDragOver={handleBoardDragOver}
+              onBoardDrop={handleBoardDrop}
               onCellDragOver={handleBoardCellDragOver}
               onCellDrop={handleBoardCellDrop}
             />

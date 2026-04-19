@@ -10,6 +10,10 @@ export function createInitialPlacedPieces(pieces) {
   return pieces.map(() => false);
 }
 
+export function createInitialMoveCount() {
+  return 0;
+}
+
 export function createIntroFeedback() {
   return {
     tone: "info",

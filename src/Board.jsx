@@ -37,6 +37,8 @@ export default function Board({
   dragPreviewPlacement,
   onPlacedPieceDragStart,
   onPlacedPieceDragEnd,
+  onBoardDragOver,
+  onBoardDrop,
   onCellDragOver,
   onCellDrop,
 }) {
@@ -84,7 +86,11 @@ export default function Board({
   });
 
   return (
-    <div className={["board", isDragActive ? "board-drag-active" : ""].filter(Boolean).join(" ")}>
+    <div
+      className={["board", isDragActive ? "board-drag-active" : ""].filter(Boolean).join(" ")}
+      onDragOver={onBoardDragOver}
+      onDrop={onBoardDrop}
+    >
       {board.map((row, i) => (
         <div key={i} className="board-row">
           {row.map((cell, j) => {

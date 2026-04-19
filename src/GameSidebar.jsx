@@ -11,6 +11,34 @@ export default function GameSidebar({
       <section className="shortcut-panel">
         <div className="panel-header">
           <div>
+            <p className="panel-label">Tutorial</p>
+            <h2 className="panel-title">How To Start</h2>
+          </div>
+          <span className="panel-badge">Quick guide</span>
+        </div>
+
+        <div className="tutorial-list">
+          <p className="tutorial-item">
+            <strong>1.</strong> Pick any open piece from the left column. The active piece is also
+            shown below the board.
+          </p>
+          <p className="tutorial-item">
+            <strong>2.</strong> Rotate it until the light bulbs line up with likely ghost squares.
+          </p>
+          <p className="tutorial-item">
+            <strong>3.</strong> In drag mode, drop the piece on the board. In keyboard mode, move
+            it with WASD or the arrow keys and press Enter to place it.
+          </p>
+          <p className="tutorial-item">
+            <strong>4.</strong> If a piece blocks a better answer, move it or pull it back off the
+            board and try another arrangement.
+          </p>
+        </div>
+      </section>
+
+      <section className="shortcut-panel">
+        <div className="panel-header">
+          <div>
             <p className="panel-label">How To Play</p>
             <h2 className="panel-title">Rules</h2>
           </div>
