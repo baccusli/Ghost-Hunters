@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import Board, { buildBoard } from "./Board";
-import Tray from "./Tray";
+import ActivePiecePanel from "./ActivePiecePanel";
+import GameHeader from "./GameHeader";
+import GameSidebar from "./GameSidebar";
 import { ghosts } from "./Ghosts";
+import PieceGallery from "./PieceGallery";
+import {
+  createInitialPiecePositions,
+  createInitialPieceRotations,
+  createInitialPlacedPieces,
+  createIntroFeedback,
+  createResetFeedback,
+  formatElapsedTime,
+} from "./gameState";
 import { getPlacementBounds, pieces } from "./Pieces";
 
 export default function App() {
@@ -9,22 +20,22 @@ export default function App() {
   const dragMetaRef = useRef(null);
   const startTimeRef = useRef(Date.now());
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [piecePositions, setPiecePositions] = useState(
-    pieces.map(() => ({ y: 0, x: 0 }))
+  const [piecePositions, setPiecePositions] = useState(() =>
+    createInitialPiecePositions(pieces)
   );
-  const [pieceRotations, setPieceRotations] = useState(pieces.map(() => 0));
-  const [placedPieces, setPlacedPieces] = useState(pieces.map(() => false));
+  const [pieceRotations, setPieceRotations] = useState(() =>
+    createInitialPieceRotations(pieces)
+  );
+  const [placedPieces, setPlacedPieces] = useState(() =>
+    createInitialPlacedPieces(pieces)
+  );
   const [elapsedMilliseconds, setElapsedMilliseconds] = useState(0);
   const [timerStarted, setTimerStarted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [controlMode, setControlMode] = useState("drag");
   const [dragState, setDragState] = useState(null);
   const [dragHoverCell, setDragHoverCell] = useState(null);
-  const [feedback, setFeedback] = useState({
-    tone: "info",
-    message:
-      "Goal: place every gadget on the 4 x 4 board so each ghost is lit by at least one light bulb.",
-  });
+  const [feedback, setFeedback] = useState(createIntroFeedback);
 
   const rotatedPieces = pieces.map((piece, index) =>
     piece.rotated(pieceRotations[index])
@@ -32,19 +43,15 @@ export default function App() {
 
   function resetGame() {
     setSelectedIndex(0);
-    setPiecePositions(pieces.map(() => ({ y: 0, x: 0 })));
-    setPieceRotations(pieces.map(() => 0));
-    setPlacedPieces(pieces.map(() => false));
+    setPiecePositions(createInitialPiecePositions(pieces));
+    setPieceRotations(createInitialPieceRotations(pieces));
+    setPlacedPieces(createInitialPlacedPieces(pieces));
     startTimeRef.current = Date.now();
     setElapsedMilliseconds(0);
     setTimerStarted(false);
     setSettingsOpen(false);
     clearDragInteraction();
-    setFeedback({
-      tone: "info",
-      message:
-        "Fresh board. Pick a piece, rotate it if needed, then place it so the light bulbs reach the ghosts.",
-    });
+    setFeedback(createResetFeedback());
   }
 
   const selectedPiece = rotatedPieces[selectedIndex];
@@ -88,12 +95,7 @@ export default function App() {
   const litGhostCount = buildBoard(ghosts, placedPieceData, null)
     .flat()
     .filter((cell) => cell.lit).length;
-  const totalSeconds = Math.floor(elapsedMilliseconds / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  const milliseconds = elapsedMilliseconds % 1000;
-  const timerLabel = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  const finishTimeLabel = `${timerLabel}.${String(milliseconds).padStart(3, "0")}`;
+  const { timerLabel, finishTimeLabel } = formatElapsedTime(elapsedMilliseconds);
   const selectedPieceNumber = selectedIndex + 1;
   const placedCount = placedPieces.filter(Boolean).length;
   const hasWon = litGhostCount >= ghosts.length && placedCount === pieces.length;
@@ -102,6 +104,28 @@ export default function App() {
 
   function updateFeedback(message, tone = "info") {
     setFeedback({ message, tone });
+  }
+
+  function handleSelectPiece(index, isPlaced) {
+    if (hasWon || isPlaced) {
+      return;
+    }
+
+    if (index !== selectedIndex) {
+      startTimer();
+    }
+
+    setSelectedIndex(index);
+    updateFeedback(`Selected piece #${index + 1}.`, "info");
+  }
+
+  function handleControlModeChange(mode) {
+    setControlMode(mode);
+    clearDragInteraction();
+    updateFeedback(
+      mode === "drag" ? "Drag and drop controls enabled." : "Keyboard controls enabled.",
+      "info"
+    );
   }
 
   function clearDragInteraction() {
@@ -659,41 +683,14 @@ export default function App() {
   return (
     <div className="app">
       <div className="app-shell">
-        <header className="hero">
-          <div>
-            <h1 className="title">Ghost Hunters</h1>
-            <p className="subtitle">
-              Place all six gadget pieces on the 4 x 4 board. Each ghost must end
-              up on a square with a light bulb, and pieces are not allowed to overlap.
-            </p>
-          </div>
-
-          <div className="status-strip">
-            <div className="status-card status-card-primary">
-              <span className="status-label">Lit Ghosts</span>
-              <strong className="status-value">
-                {litGhostCount} / {ghosts.length}
-              </strong>
-            </div>
-
-            <div className="status-card">
-              <span className="status-label">Placed Pieces</span>
-              <strong className="status-value">
-                {placedCount} / {pieces.length}
-              </strong>
-            </div>
-
-            <div className="status-card">
-              <span className="status-label">Selected Piece</span>
-              <strong className="status-value">#{selectedPieceNumber}</strong>
-            </div>
-
-            <div className="status-card">
-              <span className="status-label">Timer</span>
-              <strong className="status-value">{timerLabel}</strong>
-            </div>
-          </div>
-        </header>
+        <GameHeader
+          litGhostCount={litGhostCount}
+          ghostCount={ghosts.length}
+          placedCount={placedCount}
+          pieceCount={pieces.length}
+          selectedPieceNumber={selectedPieceNumber}
+          timerLabel={timerLabel}
+        />
 
         {hasWon ? (
           <p className="win-message">
@@ -702,67 +699,16 @@ export default function App() {
         ) : null}
 
         <main className="game-layout">
-          <section className="piece-gallery-panel piece-gallery-sidebar">
-            <div className="panel-header">
-              <div>
-                <p className="panel-label">Pieces</p>
-                <h2 className="panel-title">All Pieces</h2>
-              </div>
-              <span className="panel-badge">{pieces.length} total pieces</span>
-            </div>
-
-            <div className="piece-gallery-grid">
-              {rotatedPieces.map((piece, index) => {
-                const isSelected = index === selectedIndex;
-                const isPlaced = placedPieces[index];
-
-                return (
-                  <button
-                    key={piece.id}
-                    type="button"
-                  className={[
-                      "piece-gallery-card",
-                      isSelected ? "piece-gallery-card-selected" : "",
-                      isPlaced ? "piece-gallery-card-placed" : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    onClick={() => {
-                      if (!hasWon && !isPlaced) {
-                        if (index !== selectedIndex) {
-                          startTimer();
-                        }
-                        setSelectedIndex(index);
-                        updateFeedback(`Selected piece #${index + 1}.`, "info");
-                      }
-                    }}
-                    disabled={hasWon || isPlaced}
-                  >
-                    <div className="piece-gallery-card-header">
-                      <span className="piece-gallery-title">Piece #{index + 1}</span>
-                      <span className="piece-gallery-state">
-                        {isPlaced ? "Placed" : isSelected ? "Selected" : "Available"}
-                      </span>
-                    </div>
-                    <div
-                      className={[
-                        "tray-drag-shell",
-                        "tray-gallery-drag-shell",
-                        !dragEnabled || isPlaced ? "tray-drag-shell-disabled" : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                      draggable={dragEnabled && !hasWon && !isPlaced}
-                      onDragStart={(event) => handlePieceDragStart(event, index)}
-                      onDragEnd={handlePieceDragEnd}
-                    >
-                      <Tray piece={piece} className="tray-gallery" />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+          <PieceGallery
+            pieces={rotatedPieces}
+            placedPieces={placedPieces}
+            selectedIndex={selectedIndex}
+            dragEnabled={dragEnabled}
+            hasWon={hasWon}
+            onSelectPiece={handleSelectPiece}
+            onPieceDragStart={handlePieceDragStart}
+            onPieceDragEnd={handlePieceDragEnd}
+          />
 
           <section className="board-panel">
             <div className="panel-header">
@@ -785,234 +731,34 @@ export default function App() {
               onCellDrop={handleBoardCellDrop}
             />
 
-            <div className="board-tray-panel">
-              <div className="panel-header board-tray-header">
-                <div>
-                  <p className="panel-label">Active Piece</p>
-                  <h2 className="panel-title">Ready For Placement</h2>
-                </div>
-                <span
-                  className={`selection-chip ${selectedPiecePlaced ? "selection-chip-placed" : ""}`}
-                >
-                  {selectedPiecePlaced
-                    ? "Locked In"
-                    : dragEnabled
-                      ? "Ready To Drag"
-                      : "Ready For Keys"}
-                </span>
-              </div>
-
-              <div className="piece-meta">
-                <div className="meta-card">
-                  <span className="meta-label">Piece</span>
-                  <strong className="meta-value">#{selectedPieceNumber}</strong>
-                </div>
-              </div>
-
-              <div className="piece-preview-layout board-piece-preview-layout">
-                <div className="preview-actions">
-                  <button
-                    type="button"
-                    className="control-button control-button-secondary"
-                    onClick={() => rotateSelectedPiece(-1)}
-                    disabled={hasWon || selectedPiecePlaced}
-                  >
-                    Rotate Left
-                  </button>
-
-                  <button
-                    type="button"
-                    className="control-button control-button-secondary"
-                    onClick={() => rotateSelectedPiece()}
-                    disabled={hasWon || selectedPiecePlaced}
-                  >
-                    Rotate Right
-                  </button>
-
-                  <button
-                    type="button"
-                    className="control-button control-button-secondary"
-                    onClick={() => switchPiece(-1)}
-                    disabled={hasWon || allPiecesPlaced}
-                  >
-                    Previous Piece
-                  </button>
-
-                  <button
-                    type="button"
-                    className="control-button control-button-secondary"
-                    onClick={() => switchPiece(1)}
-                    disabled={hasWon || allPiecesPlaced}
-                  >
-                    Next Piece
-                  </button>
-                </div>
-
-                <div
-                  className={[
-                    "tray-drag-shell",
-                    "tray-board-preview",
-                    !dragEnabled || hasWon || selectedPiecePlaced ? "tray-drag-shell-disabled" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  draggable={dragEnabled && !hasWon && !selectedPiecePlaced}
-                  onDragStart={(event) => handlePieceDragStart(event, selectedIndex)}
-                  onDragEnd={handlePieceDragEnd}
-                >
-                  <Tray piece={selectedPiece} className="tray-preview" />
-                </div>
-              </div>
-            </div>
-
-            <div className="board-focus-bar">
-              <div className="board-focus-copy">
-                <span className="focus-label">Current Action</span>
-                <strong className="focus-title">
-                  {selectedPiecePlaced
-                    ? `Piece #${selectedPieceNumber} is locked in`
-                    : `Place piece #${selectedPieceNumber}`}
-                </strong>
-                <p
-                  className={`feedback-text feedback-text-${feedback.tone}`}
-                  aria-live="polite"
-                >
-                  {feedback.message}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className="control-button control-button-primary control-button-hero"
-                onClick={() => {
-                  tryPlaceSelectedPiece(true);
-                }}
-                disabled={hasWon || selectedPiecePlaced}
-              >
-                Place Piece
-              </button>
-            </div>
+            <ActivePiecePanel
+              dragEnabled={dragEnabled}
+              hasWon={hasWon}
+              selectedPiecePlaced={selectedPiecePlaced}
+              selectedPieceNumber={selectedPieceNumber}
+              selectedPiece={selectedPiece}
+              selectedIndex={selectedIndex}
+              allPiecesPlaced={allPiecesPlaced}
+              feedback={feedback}
+              onRotateLeft={() => rotateSelectedPiece(-1)}
+              onRotateRight={() => rotateSelectedPiece()}
+              onPreviousPiece={() => switchPiece(-1)}
+              onNextPiece={() => switchPiece(1)}
+              onPieceDragStart={handlePieceDragStart}
+              onPieceDragEnd={handlePieceDragEnd}
+              onPlacePiece={() => tryPlaceSelectedPiece(true)}
+            />
           </section>
         </main>
 
-        <aside className="sidebar sidebar-bottom">
-          <section className="shortcut-panel">
-            <div className="panel-header">
-              <div>
-                <p className="panel-label">How To Play</p>
-                <h2 className="panel-title">Rules</h2>
-              </div>
-              <span className="panel-badge">New players</span>
-            </div>
-
-            <div className="rules-list">
-              <p className="rule-item">
-                <strong>1.</strong> The goal is to light every ghost with a yellow light bulb.
-              </p>
-              <p className="rule-item">
-                <strong>2.</strong> You need to place every piece on the board to finish the game.
-              </p>
-              <p className="rule-item">
-                <strong>3.</strong> Blue squares may cover empty spaces, pieces cannot overlap.
-              </p>
-              <p className="rule-item">
-                <strong>4.</strong> You can rotate pieces.
-              </p>
-              <p className="rule-item">
-                <strong>Symbols:</strong> `👻` ghost, `💡` light, `🟦` empty square.
-              </p>
-            </div>
-          </section>
-
-          <section className="shortcut-panel">
-            <div className="action-list compact-action-list">
-              <button
-                type="button"
-                className="control-button control-button-ghost control-button-icon"
-                onClick={() => setSettingsOpen((open) => !open)}
-                aria-expanded={settingsOpen}
-                >
-                  ⚙ Settings
-                </button>
-
-              {settingsOpen ? (
-                <>
-                  <div className="settings-block">
-                    <span className="meta-label">Controls</span>
-                    <div className="mode-toggle" role="radiogroup" aria-label="Control mode">
-                      <button
-                        type="button"
-                        className={[
-                          "mode-toggle-button",
-                          controlMode === "drag" ? "mode-toggle-button-active" : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                        role="radio"
-                        aria-checked={controlMode === "drag"}
-                        onClick={() => {
-                          setControlMode("drag");
-                          clearDragInteraction();
-                          updateFeedback("Drag and drop controls enabled.", "info");
-                        }}
-                      >
-                        Drag & Drop
-                      </button>
-                      <button
-                        type="button"
-                        className={[
-                          "mode-toggle-button",
-                          controlMode === "keyboard" ? "mode-toggle-button-active" : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                        role="radio"
-                        aria-checked={controlMode === "keyboard"}
-                        onClick={() => {
-                          setControlMode("keyboard");
-                          clearDragInteraction();
-                          updateFeedback("Keyboard controls enabled.", "info");
-                        }}
-                      >
-                        Keyboard
-                      </button>
-                    </div>
-                    <p className="settings-help">
-                      Drag mode lets you drop pieces directly onto the board. Keyboard mode lets you move the selected piece with the keys listed below.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="control-button control-button-ghost"
-                    onClick={resetGame}
-                  >
-                    Reset Game
-                  </button>
-                </>
-              ) : null}
-            </div>
-          </section>
-
-          <section className="shortcut-panel">
-            <div className="panel-header">
-              <div>
-                <p className="panel-label">Keyboard</p>
-                <h2 className="panel-title">Quick Commands</h2>
-              </div>
-              <span className="panel-badge">
-                {keyboardEnabled ? "Enabled" : "Turn on in Settings"}
-              </span>
-            </div>
-            <div className="shortcut-list">
-              <span className="shortcut-pill">WASD / Arrows move</span>
-              <span className="shortcut-pill">Z rotate right</span>
-              <span className="shortcut-pill">Q / E switch</span>
-              <span className="shortcut-pill">Enter place</span>
-              <span className="shortcut-pill">R reset</span>
-            </div>
-          </section>
-        </aside>
+        <GameSidebar
+          keyboardEnabled={keyboardEnabled}
+          settingsOpen={settingsOpen}
+          controlMode={controlMode}
+          onToggleSettings={() => setSettingsOpen((open) => !open)}
+          onSetControlMode={handleControlModeChange}
+          onResetGame={resetGame}
+        />
       </div>
     </div>
   );
