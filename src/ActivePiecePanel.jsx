@@ -11,6 +11,7 @@ export default function ActivePiecePanel({
   feedback,
   onRotateLeft,
   onRotateRight,
+  onRotatePreview,
   onPreviousPiece,
   onNextPiece,
   onPieceDragStart,
@@ -23,7 +24,7 @@ export default function ActivePiecePanel({
         <div className="panel-header board-tray-header">
           <div>
             <p className="panel-label">Active Piece</p>
-            <h2 className="panel-title">Ready For Placement</h2>
+            <h2 className="panel-title">Placement Console</h2>
           </div>
           <span
             className={`selection-chip ${selectedPiecePlaced ? "selection-chip-placed" : ""}`}
@@ -91,15 +92,35 @@ export default function ActivePiecePanel({
               .filter(Boolean)
               .join(" ")}
             draggable={dragEnabled && !hasWon && !selectedPiecePlaced}
+            title={
+              dragEnabled && !hasWon && !selectedPiecePlaced
+                ? "Drag to place. Double-click or right-click to rotate."
+                : undefined
+            }
             onDragStart={(event) => onPieceDragStart(event, selectedIndex)}
             onDragEnd={onPieceDragEnd}
+            onDoubleClick={() => onRotatePreview?.()}
+            onContextMenu={(event) => {
+              if (!dragEnabled || hasWon || selectedPiecePlaced) {
+                return;
+              }
+
+              event.preventDefault();
+              onRotatePreview?.();
+            }}
           >
             <Tray piece={selectedPiece} className="tray-preview" />
           </div>
         </div>
+
+        {dragEnabled && !selectedPiecePlaced ? (
+          <p className="drag-rotate-hint">
+            Drag to place. Double-click or right-click the piece preview to rotate.
+          </p>
+        ) : null}
       </div>
 
-      <div className="board-focus-bar">
+        <div className="board-focus-bar">
         <div className="board-focus-copy">
           <span className="focus-label">Current Action</span>
           <strong className="focus-title">

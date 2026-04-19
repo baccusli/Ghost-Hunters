@@ -75,13 +75,13 @@ export class Piece {
         return results;
     }
 
-    checkOverlap(currentIndex, originY, originX) {
-        const currentCells = pieces[currentIndex].pieceCell(originY, originX);
-        for (let index = 0; index < 6; index++) {
+    checkOverlap(currentIndex, originY, originX, allPieces) {
+        const currentCells = allPieces[currentIndex].pieceCell(originY, originX);
+        for (let index = 0; index < allPieces.length; index++) {
             if (index === currentIndex) {
                 continue;
             }
-            let otherCells = pieces[index].pieceCell(pieces[index].y, pieces[index].x);
+            let otherCells = allPieces[index].pieceCell(allPieces[index].y, allPieces[index].x);
             if (otherCells.some((otherCell) => currentCells.some((currentCell) => otherCell.y === currentCell.y && otherCell.x === currentCell.x))) {
                 return true;
             }

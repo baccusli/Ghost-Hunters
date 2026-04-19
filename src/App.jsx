@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import Board, { buildBoard } from "./Board";
+import Board from "./Board";
 import ActivePiecePanel from "./ActivePiecePanel";
 import GameHeader from "./GameHeader";
 import GameSidebar from "./GameSidebar";
+import { countLitGhosts } from "./boardState";
 import { ghosts } from "./Ghosts";
 import PieceGallery from "./PieceGallery";
 import SolvedCelebration from "./SolvedCelebration";
@@ -98,9 +99,7 @@ export default function App() {
         y,
         x,
       };
-  const litGhostCount = buildBoard(ghosts, placedPieceData, null)
-    .flat()
-    .filter((cell) => cell.lit).length;
+  const litGhostCount = countLitGhosts(ghosts, placedPieceData);
   const { timerLabel, finishTimeLabel } = formatElapsedTime(elapsedMilliseconds);
   const selectedPieceNumber = selectedIndex + 1;
   const placedCount = placedPieces.filter(Boolean).length;
@@ -324,25 +323,26 @@ export default function App() {
     });
   }
 
-  function rotateSelectedPiece(delta = 1) {
-    if (hasWon || placedPieces[selectedIndex]) {
+  function rotatePiece(pieceIndex, delta = 1) {
+    if (hasWon || placedPieces[pieceIndex]) {
       return;
     }
 
+    startTimer();
     recordMove();
-    const nextRotation = (pieceRotations[selectedIndex] + delta + 4) % 4;
-    const nextPiece = pieces[selectedIndex].rotated(nextRotation);
+    const nextRotation = (pieceRotations[pieceIndex] + delta + 4) % 4;
+    const nextPiece = pieces[pieceIndex].rotated(nextRotation);
     const nextBounds = getPlacementBounds(nextPiece);
 
     setPieceRotations((prev) =>
       prev.map((rotation, index) =>
-        index === selectedIndex ? nextRotation : rotation
+        index === pieceIndex ? nextRotation : rotation
       )
     );
 
     setPiecePositions((prev) =>
       prev.map((pos, index) =>
-        index === selectedIndex
+        index === pieceIndex
           ? {
               ...pos,
               y: clampPosition(pos.y, nextBounds.minY, nextBounds.maxY),
@@ -352,10 +352,18 @@ export default function App() {
       )
     );
 
+    if (pieceIndex !== selectedIndex) {
+      setSelectedIndex(pieceIndex);
+    }
+
     updateFeedback(
-      `Piece #${selectedPieceNumber} rotated to ${nextRotation * 90}deg.`,
+      `Piece #${pieceIndex + 1} rotated to ${nextRotation * 90}deg.`,
       "info"
     );
+  }
+
+  function rotateSelectedPiece(delta = 1) {
+    rotatePiece(selectedIndex, delta);
   }
 
   function checkOverlap(pieceIndex, originY, originX, positions = piecePositions) {
@@ -790,6 +798,7 @@ export default function App() {
             dragEnabled={dragEnabled}
             hasWon={hasWon}
             onSelectPiece={handleSelectPiece}
+            onRotatePiece={rotatePiece}
             onPieceDragStart={handlePieceDragStart}
             onPieceDragEnd={handlePieceDragEnd}
           />
@@ -798,9 +807,8 @@ export default function App() {
             <div className="panel-header">
               <div>
                 <p className="panel-label">Board</p>
-                <h2 className="panel-title">Light Every Ghost</h2>
+                <h2 className="panel-title">Light the Ghosts</h2>
               </div>
-              <span className="panel-badge">4 x 4 puzzle</span>
             </div>
             <Board
               ghosts={ghosts}
@@ -828,6 +836,7 @@ export default function App() {
               feedback={feedback}
               onRotateLeft={() => rotateSelectedPiece(-1)}
               onRotateRight={() => rotateSelectedPiece()}
+              onRotatePreview={() => rotateSelectedPiece()}
               onPreviousPiece={() => switchPiece(-1)}
               onNextPiece={() => switchPiece(1)}
               onPieceDragStart={handlePieceDragStart}
@@ -838,6 +847,7 @@ export default function App() {
         </main>
 
         <GameSidebar
+          pieceCount={pieces.length}
           keyboardEnabled={keyboardEnabled}
           settingsOpen={settingsOpen}
           controlMode={controlMode}

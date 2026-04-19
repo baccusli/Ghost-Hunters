@@ -1,19 +1,24 @@
 :root {
   color: #f8fafc;
   background:
-    radial-gradient(circle at top left, rgba(45, 212, 191, 0.18), transparent 30%),
-    radial-gradient(circle at top right, rgba(251, 191, 36, 0.16), transparent 28%),
-    linear-gradient(180deg, #0f172a 0%, #111827 48%, #0b1120 100%);
+    radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.22), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(251, 191, 36, 0.15), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(45, 212, 191, 0.12), transparent 26%),
+    linear-gradient(180deg, #07111f 0%, #0c1729 46%, #08111d 100%);
   font-family: "Avenir Next", "Segoe UI", sans-serif;
-  --panel-surface: rgba(15, 23, 42, 0.72);
-  --panel-border: rgba(148, 163, 184, 0.18);
-  --text-muted: rgba(226, 232, 240, 0.82);
+  --panel-surface: rgba(10, 18, 32, 0.76);
+  --panel-surface-strong: rgba(8, 15, 28, 0.88);
+  --panel-border: rgba(148, 163, 184, 0.14);
+  --panel-border-strong: rgba(148, 163, 184, 0.24);
+  --text-muted: rgba(226, 232, 240, 0.74);
   --accent-primary: #f8fafc;
   --accent-action-start: #fde047;
   --accent-action-end: #fb923c;
   --accent-action-text: #431407;
   --success: #86efac;
   --danger: #fda4af;
+  --cyan: #67e8f9;
+  --shadow-soft: 0 24px 80px rgba(2, 6, 23, 0.38);
 }
 
 body {
@@ -40,17 +45,73 @@ button {
 }
 
 .hero {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 32px;
-  margin-bottom: 28px;
+  gap: 36px;
+  margin-bottom: 30px;
+  padding: 28px 30px 20px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 36px;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.78), rgba(8, 15, 28, 0.52)),
+    rgba(7, 12, 22, 0.65);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(103, 232, 249, 0.12), transparent 28%),
+    linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.03) 45%, transparent 100%);
+  pointer-events: none;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+}
+
+.brand-kicker {
+  margin: 0 0 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(125, 211, 252, 0.92);
+}
+
+.title-stack {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+}
+
+.title-chip {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.6);
+  color: rgba(226, 232, 240, 0.86);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .title {
   margin: 0;
-  font-size: clamp(56px, 8vw, 110px);
-  line-height: 0.92;
+  font-size: clamp(54px, 8vw, 104px);
+  line-height: 0.9;
   letter-spacing: -0.05em;
   color: #f8fafc;
 }
@@ -58,12 +119,14 @@ button {
 .subtitle {
   max-width: 620px;
   margin: 20px 0 0;
-  font-size: 19px;
-  line-height: 1.6;
+  font-size: 18px;
+  line-height: 1.72;
   color: rgba(226, 232, 240, 0.82);
 }
 
 .status-strip {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(5, minmax(120px, 1fr));
   gap: 14px;
@@ -76,17 +139,24 @@ button {
 .piece-gallery-panel {
   border: 1px solid var(--panel-border);
   background: var(--panel-surface);
-  box-shadow: 0 24px 80px rgba(2, 6, 23, 0.42);
+  box-shadow: var(--shadow-soft);
   backdrop-filter: blur(18px);
 }
 
 .status-card {
+  display: grid;
+  gap: 8px;
   border-radius: 24px;
   padding: 18px 20px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(10, 18, 32, 0.82)),
+    var(--panel-surface);
 }
 
 .status-card-primary {
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.26), rgba(14, 165, 233, 0.18));
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.26), rgba(14, 165, 233, 0.2)),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(10, 18, 32, 0.84));
 }
 
 .status-label,
@@ -114,6 +184,12 @@ button {
   font-size: 32px;
   font-weight: 700;
   color: #f8fafc;
+}
+
+.status-note {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted);
 }
 
 .solved-banner {
@@ -180,19 +256,23 @@ button {
 .game-layout {
   display: grid;
   grid-template-columns: minmax(250px, 300px) minmax(0, 1fr);
-  gap: 24px;
+  gap: 26px;
   align-items: start;
 }
 
 .board-panel,
 .shortcut-panel,
 .piece-gallery-panel {
-  border-radius: 32px;
+  border-radius: 30px;
   padding: 24px;
 }
 
 .board-panel {
   padding: 28px;
+  border-color: rgba(125, 211, 252, 0.14);
+  background:
+    radial-gradient(circle at top, rgba(56, 189, 248, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(10, 18, 32, 0.88), rgba(8, 15, 28, 0.94));
 }
 
 .sidebar {
@@ -237,7 +317,7 @@ button {
 .piece-gallery-card {
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 24px;
-  background: rgba(15, 23, 42, 0.74);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(8, 15, 28, 0.92));
   padding: 16px;
   text-align: left;
   color: inherit;
@@ -258,7 +338,12 @@ button {
 
 .piece-gallery-card-selected {
   border-color: rgba(103, 232, 249, 0.78);
-  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.3);
+  background:
+    linear-gradient(180deg, rgba(11, 30, 46, 0.92), rgba(8, 15, 28, 0.96));
+  box-shadow:
+    inset 0 0 0 1px rgba(186, 230, 253, 0.12),
+    0 0 0 2px rgba(34, 211, 238, 0.26),
+    0 18px 34px rgba(8, 47, 73, 0.2);
 }
 
 .piece-gallery-card-placed {
@@ -323,6 +408,12 @@ button {
   gap: 10px;
   justify-content: center;
   margin-bottom: 22px;
+  padding: 18px;
+  border-radius: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  background:
+    radial-gradient(circle at top, rgba(125, 211, 252, 0.08), transparent 32%),
+    rgba(7, 12, 22, 0.58);
 }
 
 .board-row {
@@ -336,13 +427,17 @@ button {
   width: min(17vw, 120px);
   height: min(17vw, 120px);
   border-radius: 28px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.92));
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.84), rgba(9, 16, 30, 0.96)),
+    rgba(15, 23, 42, 0.92);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: clamp(44px, 6vw, 82px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -12px 20px rgba(2, 6, 23, 0.18);
   transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
 }
 
@@ -371,9 +466,37 @@ button {
   border-color: rgba(103, 232, 249, 0.95);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 0 2px rgba(34, 211, 238, 0.55),
-    0 0 28px rgba(34, 211, 238, 0.22);
-  transform: translateY(-1px) scale(1.02);
+    inset 0 0 0 2px rgba(186, 230, 253, 0.15),
+    0 0 0 2px rgba(34, 211, 238, 0.42),
+    0 0 18px rgba(34, 211, 238, 0.14);
+  transform: translateY(-1px);
+}
+
+.selected-piece-body {
+  background:
+    linear-gradient(180deg, rgba(42, 66, 104, 0.92), rgba(13, 24, 46, 0.98)),
+    rgba(15, 23, 42, 0.92);
+}
+
+.selected-piece-light {
+  border-color: rgba(253, 224, 71, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 2px rgba(254, 240, 138, 0.18),
+    0 0 0 2px rgba(250, 204, 21, 0.34),
+    0 0 18px rgba(250, 204, 21, 0.24);
+}
+
+.selected-piece-footprint {
+  border-style: dashed;
+  border-color: rgba(125, 211, 252, 0.45);
+  background:
+    linear-gradient(180deg, rgba(14, 30, 47, 0.72), rgba(7, 12, 22, 0.84)),
+    rgba(15, 23, 42, 0.82);
+  box-shadow:
+    inset 0 0 0 1px rgba(125, 211, 252, 0.18),
+    inset 0 10px 18px rgba(8, 47, 73, 0.14);
+  color: rgba(226, 232, 240, 0.72);
 }
 
 .lit-ghost {
@@ -397,7 +520,7 @@ button {
   padding: 16px 18px;
   border-radius: 22px;
   border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(8, 15, 28, 0.72);
 }
 
 .action-list {
@@ -417,6 +540,13 @@ button {
 
 .settings-help {
   margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.drag-rotate-hint {
+  margin: 14px 0 0;
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-muted);
@@ -506,15 +636,15 @@ button {
 
 .control-button-secondary {
   color: #e2e8f0;
-  background: linear-gradient(180deg, rgba(51, 65, 85, 0.98), rgba(30, 41, 59, 0.98));
+  background: linear-gradient(180deg, rgba(51, 65, 85, 0.98), rgba(17, 24, 39, 0.98));
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.2);
   font-weight: 700;
 }
 
 .control-button-ghost {
   color: #cbd5e1;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(10, 18, 32, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.16);
   font-weight: 700;
 }
 
@@ -531,8 +661,8 @@ button {
   border-radius: 24px;
   border: 1px solid rgba(251, 191, 36, 0.18);
   background:
-    linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(249, 115, 22, 0.08)),
-    rgba(15, 23, 42, 0.85);
+    linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(249, 115, 22, 0.08)),
+    rgba(8, 15, 28, 0.92);
 }
 
 .board-focus-copy {
@@ -670,8 +800,33 @@ button {
 
 .tutorial-list {
   display: grid;
-  gap: 12px;
+  gap: 14px;
   margin-bottom: 4px;
+}
+
+.tutorial-step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  background: rgba(8, 15, 28, 0.5);
+}
+
+.tutorial-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(103, 232, 249, 0.18), rgba(56, 189, 248, 0.12));
+  color: #cffafe;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
 }
 
 .rule-item {
@@ -679,6 +834,10 @@ button {
   font-size: 15px;
   line-height: 1.55;
   color: #e2e8f0;
+  padding: 14px 16px;
+  border-left: 2px solid rgba(103, 232, 249, 0.36);
+  border-radius: 0 18px 18px 0;
+  background: rgba(8, 15, 28, 0.42);
 }
 
 .tutorial-item {
@@ -699,6 +858,7 @@ button {
 @media (max-width: 1120px) {
   .hero {
     flex-direction: column;
+    padding: 24px;
   }
 
   .status-strip {
@@ -743,6 +903,11 @@ button {
     padding: 18px;
   }
 
+  .hero {
+    border-radius: 26px;
+    padding: 18px;
+  }
+
   .status-strip,
   .piece-meta,
   .sidebar,
@@ -777,6 +942,18 @@ button {
 
   .board-focus-bar {
     justify-items: stretch;
+  }
+
+  .title-stack {
+    align-items: flex-start;
+  }
+
+  .title-chip {
+    font-size: 11px;
+  }
+
+  .tutorial-step {
+    grid-template-columns: 1fr;
   }
 
   .control-button-hero {

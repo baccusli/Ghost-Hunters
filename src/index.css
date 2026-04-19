@@ -1,12 +1,13 @@
 body {
   margin: 0;
-  background-color: black;
   color: white;
-  font-family: Arial, sans-serif;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
-  padding: 20px;
+  min-height: 100vh;
 }
 
 h1 {

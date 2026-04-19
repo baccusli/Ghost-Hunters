@@ -7,6 +7,7 @@ export default function PieceGallery({
   dragEnabled,
   hasWon,
   onSelectPiece,
+  onRotatePiece,
   onPieceDragStart,
   onPieceDragEnd,
 }) {
@@ -17,7 +18,6 @@ export default function PieceGallery({
           <p className="panel-label">Pieces</p>
           <h2 className="panel-title">All Pieces</h2>
         </div>
-        <span className="panel-badge">{pieces.length} total pieces</span>
       </div>
 
       <div className="piece-gallery-grid">
@@ -55,8 +55,30 @@ export default function PieceGallery({
                   .filter(Boolean)
                   .join(" ")}
                 draggable={dragEnabled && !hasWon && !isPlaced}
+                title={
+                  dragEnabled && !hasWon && !isPlaced
+                    ? "Drag to place. Double-click or right-click to rotate."
+                    : undefined
+                }
                 onDragStart={(event) => onPieceDragStart(event, index)}
                 onDragEnd={onPieceDragEnd}
+                onDoubleClick={(event) => {
+                  if (!dragEnabled || hasWon || isPlaced) {
+                    return;
+                  }
+
+                  event.stopPropagation();
+                  onRotatePiece?.(index);
+                }}
+                onContextMenu={(event) => {
+                  if (!dragEnabled || hasWon || isPlaced) {
+                    return;
+                  }
+
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onRotatePiece?.(index);
+                }}
               >
                 <Tray piece={piece} className="tray-gallery" />
               </div>

@@ -1,4 +1,5 @@
 export default function GameSidebar({
+  pieceCount,
   keyboardEnabled,
   settingsOpen,
   controlMode,
@@ -11,56 +12,59 @@ export default function GameSidebar({
       <section className="shortcut-panel">
         <div className="panel-header">
           <div>
-            <p className="panel-label">Tutorial</p>
-            <h2 className="panel-title">How To Start</h2>
+            <p className="panel-label">Workflow</p>
+            <h2 className="panel-title">Recommended Flow</h2>
           </div>
-          <span className="panel-badge">Quick guide</span>
         </div>
 
         <div className="tutorial-list">
-          <p className="tutorial-item">
-            <strong>1.</strong> Pick any open piece from the left column. The active piece is also
-            shown below the board.
-          </p>
-          <p className="tutorial-item">
-            <strong>2.</strong> Rotate it until the light bulbs line up with likely ghost squares.
-          </p>
-          <p className="tutorial-item">
-            <strong>3.</strong> In drag mode, drop the piece on the board. In keyboard mode, move
-            it with WASD or the arrow keys and press Enter to place it.
-          </p>
-          <p className="tutorial-item">
-            <strong>4.</strong> If a piece blocks a better answer, move it or pull it back off the
-            board and try another arrangement.
-          </p>
+          <article className="tutorial-step">
+            <span className="tutorial-step-number">01</span>
+            <p className="tutorial-item">
+              Choose any available piece from the gallery. The same piece appears in the active
+              tray under the board for quick actions.
+            </p>
+          </article>
+          <article className="tutorial-step">
+            <span className="tutorial-step-number">02</span>
+            <p className="tutorial-item">
+              Rotate first, then test fit. In drag mode, double-click or right-click a piece to
+              rotate it before you commit space on the board.
+            </p>
+          </article>
+          <article className="tutorial-step">
+            <span className="tutorial-step-number">03</span>
+            <p className="tutorial-item">
+              Drag pieces directly onto the grid, or switch to keyboard mode and move with WASD
+              or the arrow keys before pressing Enter to place.
+            </p>
+          </article>
+          <article className="tutorial-step">
+            <span className="tutorial-step-number">04</span>
+            <p className="tutorial-item">
+              If the layout starts to collapse, reposition a placed piece and keep refining until
+              every ghost lands under a light.
+            </p>
+          </article>
         </div>
       </section>
 
       <section className="shortcut-panel">
         <div className="panel-header">
           <div>
-            <p className="panel-label">How To Play</p>
-            <h2 className="panel-title">Rules</h2>
+            <p className="panel-label">Puzzle Rules</p>
+            <h2 className="panel-title">Constraints</h2>
           </div>
-          <span className="panel-badge">New players</span>
         </div>
 
         <div className="rules-list">
+          <p className="rule-item">Every ghost must be covered by a yellow light bulb.</p>
           <p className="rule-item">
-            <strong>1.</strong> The goal is to light every ghost with a yellow light bulb.
+            All {pieceCount} pieces must end up on the board to finish the run.
           </p>
-          <p className="rule-item">
-            <strong>2.</strong> You need to place every piece on the board to finish the game.
-          </p>
-          <p className="rule-item">
-            <strong>3.</strong> Blue squares may cover empty spaces, pieces cannot overlap.
-          </p>
-          <p className="rule-item">
-            <strong>4.</strong> You can rotate pieces.
-          </p>
-          <p className="rule-item">
-            <strong>Symbols:</strong> `👻` ghost, `💡` light, `🟦` empty square.
-          </p>
+          <p className="rule-item">Blue squares can cover empty board cells, but pieces cannot overlap.</p>
+          <p className="rule-item">Rotation is always allowed, so orientation matters as much as position.</p>
+          <p className="rule-item">Legend: `👻` ghost, `💡` light, `🟦` body square.</p>
         </div>
       </section>
 
@@ -110,8 +114,9 @@ export default function GameSidebar({
                   </button>
                 </div>
                 <p className="settings-help">
-                  Drag mode lets you drop pieces directly onto the board. Keyboard mode lets you
-                  move the selected piece with the keys listed below.
+                  Drag mode lets you drop pieces directly onto the board and rotate them with a
+                  double-click or right-click. Keyboard mode lets you move the selected piece with
+                  the keys listed below.
                 </p>
               </div>
 
@@ -131,7 +136,7 @@ export default function GameSidebar({
         <div className="panel-header">
           <div>
             <p className="panel-label">Keyboard</p>
-            <h2 className="panel-title">Quick Commands</h2>
+            <h2 className="panel-title">Command Palette</h2>
           </div>
           <span className="panel-badge">
             {keyboardEnabled ? "Enabled" : "Turn on in Settings"}

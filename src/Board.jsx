@@ -1,32 +1,4 @@
-import { checkPiecePlacement } from "./Pieces";
-
-export function buildBoard(ghosts, placedPieces, previewPiece) {
-  const board = Array.from({ length: 4 }, () =>
-    Array.from({ length: 4 }, () => ({ icon: "⬛", lit: false, covered: false }))
-  );
-
-  ghosts.forEach((ghost) => {
-    board[ghost.y][ghost.x] = { icon: "👻", lit: false, covered: false };
-  });
-
-  placedPieces.forEach(({ piece, y, x }) => {
-    if (piece?.onBoard(y, x)) {
-      checkPiecePlacement(board, piece, ghosts, y, x);
-    }
-  });
-
-  if (previewPiece?.piece?.onBoard(previewPiece.y, previewPiece.x)) {
-    checkPiecePlacement(
-      board,
-      previewPiece.piece,
-      ghosts,
-      previewPiece.y,
-      previewPiece.x
-    );
-  }
-
-  return board;
-}
+import { buildBoard } from "./boardState";
 
 export default function Board({
   ghosts,
@@ -44,21 +16,40 @@ export default function Board({
 }) {
   const board = buildBoard(ghosts, placedPieces, previewPiece);
   const selectedCells = new Set();
+  const selectedLightCells = new Set();
+  const selectedFootprintCells = new Set();
   const dragPreviewCells = new Set();
   const placedPieceCells = new Map();
 
   if (selectedPiecePlacement?.piece?.onBoard(selectedPiecePlacement.y, selectedPiecePlacement.x)) {
-    selectedPiecePlacement.piece
-      .pieceCell(selectedPiecePlacement.y, selectedPiecePlacement.x)
-      .forEach((cell) => {
-        selectedCells.add(`${cell.y},${cell.x}`);
-      });
+    const { piece, y, x } = selectedPiecePlacement;
+    const pieceCells = piece.pieceCell(y, x);
+    const lightCells = piece.lightsAt(y, x);
+    const allCells = [...pieceCells, ...lightCells];
+    const minY = Math.min(...allCells.map((cell) => cell.y));
+    const maxY = Math.max(...allCells.map((cell) => cell.y));
+    const minX = Math.min(...allCells.map((cell) => cell.x));
+    const maxX = Math.max(...allCells.map((cell) => cell.x));
 
-    selectedPiecePlacement.piece
-      .lightsAt(selectedPiecePlacement.y, selectedPiecePlacement.x)
-      .forEach((cell) => {
-        selectedCells.add(`${cell.y},${cell.x}`);
-      });
+    pieceCells.forEach((cell) => {
+      selectedCells.add(`${cell.y},${cell.x}`);
+    });
+
+    lightCells.forEach((cell) => {
+      const key = `${cell.y},${cell.x}`;
+      selectedCells.add(key);
+      selectedLightCells.add(key);
+    });
+
+    for (let row = minY; row <= maxY; row += 1) {
+      for (let col = minX; col <= maxX; col += 1) {
+        const key = `${row},${col}`;
+
+        if (!selectedCells.has(key)) {
+          selectedFootprintCells.add(key);
+        }
+      }
+    }
   }
 
   if (dragPreviewPlacement?.piece?.onBoard(dragPreviewPlacement.y, dragPreviewPlacement.x)) {
@@ -115,7 +106,12 @@ export default function Board({
                   dragPreviewCells.has(`${i},${j}`) ? "board-cell-drag-hover" : "",
                   cell.covered ? "covered-ghost" : "",
                   cell.lit ? "lit-ghost" : "",
+                  selectedFootprintCells.has(`${i},${j}`) ? "selected-piece-footprint" : "",
                   selectedCells.has(`${i},${j}`) ? "selected-piece-cell" : "",
+                  selectedCells.has(`${i},${j}`) && !selectedLightCells.has(`${i},${j}`)
+                    ? "selected-piece-body"
+                    : "",
+                  selectedLightCells.has(`${i},${j}`) ? "selected-piece-light" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
