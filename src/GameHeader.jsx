@@ -10,14 +10,11 @@ export default function GameHeader({
   return (
     <header className="hero">
       <div className="hero-copy">
-        <p className="brand-kicker">Puzzle Lab Edition</p>
         <div className="title-stack">
           <h1 className="title">Ghost Hunters</h1>
-          <span className="title-chip">Spatial Logic Game</span>
         </div>
         <p className="subtitle">
-          A compact deduction puzzle with tactile controls, clean feedback, and
-          a single objective: illuminate every ghost without overlapping any gadget pieces.
+          Rotate and place each Piece until every ghost is lit.
         </p>
       </div>
 

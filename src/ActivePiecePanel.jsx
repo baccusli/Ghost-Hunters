@@ -26,21 +26,18 @@ export default function ActivePiecePanel({
             <p className="panel-label">Active Piece</p>
             <h2 className="panel-title">Placement Console</h2>
           </div>
-          <span
-            className={`selection-chip ${selectedPiecePlaced ? "selection-chip-placed" : ""}`}
-          >
-            {selectedPiecePlaced
-              ? "Locked In"
-              : dragEnabled
-                ? "Ready To Drag"
-                : "Ready For Keys"}
-          </span>
         </div>
 
         <div className="piece-meta">
           <div className="meta-card">
             <span className="meta-label">Piece</span>
             <strong className="meta-value">#{selectedPieceNumber}</strong>
+          </div>
+          <div className="meta-card">
+            <span className="meta-label">Mode</span>
+            <strong className="meta-value meta-value-compact">
+              {dragEnabled ? "Drag" : "Keys"}
+            </strong>
           </div>
         </div>
 
@@ -120,7 +117,7 @@ export default function ActivePiecePanel({
         ) : null}
       </div>
 
-        <div className="board-focus-bar">
+      <div className="board-focus-bar">
         <div className="board-focus-copy">
           <span className="focus-label">Current Action</span>
           <strong className="focus-title">

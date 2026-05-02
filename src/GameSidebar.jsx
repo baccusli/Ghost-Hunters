@@ -12,8 +12,7 @@ export default function GameSidebar({
       <section className="shortcut-panel">
         <div className="panel-header">
           <div>
-            <p className="panel-label">Workflow</p>
-            <h2 className="panel-title">Recommended Flow</h2>
+            <h2 className="panel-title">Tutorial</h2>
           </div>
         </div>
 
@@ -52,8 +51,7 @@ export default function GameSidebar({
       <section className="shortcut-panel">
         <div className="panel-header">
           <div>
-            <p className="panel-label">Puzzle Rules</p>
-            <h2 className="panel-title">Constraints</h2>
+            <h2 className="panel-title">Rules</h2>
           </div>
         </div>
 
@@ -135,8 +133,8 @@ export default function GameSidebar({
       <section className="shortcut-panel">
         <div className="panel-header">
           <div>
-            <p className="panel-label">Keyboard</p>
-            <h2 className="panel-title">Command Palette</h2>
+            <p className="panel-label">Shortcuts</p>
+            <h2 className="panel-title">Command Deck</h2>
           </div>
           <span className="panel-badge">
             {keyboardEnabled ? "Enabled" : "Turn on in Settings"}

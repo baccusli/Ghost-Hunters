@@ -11,13 +11,17 @@ export default function PieceGallery({
   onPieceDragStart,
   onPieceDragEnd,
 }) {
+  const remainingCount = placedPieces.filter((placed) => !placed).length;
+
   return (
     <section className="piece-gallery-panel piece-gallery-sidebar">
       <div className="panel-header">
         <div>
-          <p className="panel-label">Pieces</p>
-          <h2 className="panel-title">All Pieces</h2>
+          <h2 className="panel-title">Pieces</h2>
         </div>
+        <span className="panel-badge">
+          {remainingCount} left
+        </span>
       </div>
 
       <div className="piece-gallery-grid">

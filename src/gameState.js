@@ -18,7 +18,7 @@ export function createIntroFeedback() {
   return {
     tone: "info",
     message:
-      "Goal: place every gadget on the 4 x 4 board so each ghost is lit by at least one light bulb.",
+      "Goal: place every piece on the 4 x 4 board so each ghost is lit by at least one light bulb.",
   };
 }
 

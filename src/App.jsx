@@ -355,15 +355,6 @@ export default function App() {
     if (pieceIndex !== selectedIndex) {
       setSelectedIndex(pieceIndex);
     }
-
-    updateFeedback(
-      `Piece #${pieceIndex + 1} rotated to ${nextRotation * 90}deg.`,
-      "info"
-    );
-  }
-
-  function rotateSelectedPiece(delta = 1) {
-    rotatePiece(selectedIndex, delta);
   }
 
   function checkOverlap(pieceIndex, originY, originX, positions = piecePositions) {
@@ -443,12 +434,6 @@ export default function App() {
     startPieceDrag(event, pieceIndex, "board");
   }
 
-  function setPiecePlaced(pieceIndex, nextPlaced) {
-    setPlacedPieces((prev) =>
-      prev.map((placed, index) => (index === pieceIndex ? nextPlaced : placed))
-    );
-  }
-
   function lockPieceInPlace(pieceIndex) {
     setPlacedPieces((prev) => {
       if (prev[pieceIndex]) {
@@ -488,7 +473,11 @@ export default function App() {
         !dragMetaRef.current.invalidBoardDrop
       ) {
         recordMove();
-        setPiecePlaced(dragMetaRef.current.pieceIndex, false);
+        setPlacedPieces((prev) =>
+          prev.map((placed, index) =>
+            index === dragMetaRef.current.pieceIndex ? false : placed
+          )
+        );
         setSelectedIndex(dragMetaRef.current.pieceIndex);
         updateFeedback(
           `Piece #${dragMetaRef.current.pieceIndex + 1} removed from the board.`,
@@ -570,10 +559,6 @@ export default function App() {
     setDragHoverCell(null);
   }
 
-  function handleBoardCellDrop(event, cellY, cellX) {
-    commitBoardDrop(event, cellY, cellX);
-  }
-
   function handleBoardDragOver(event) {
     if (!dragEnabled || !(dragStateRef.current ?? dragState)) {
       return;
@@ -599,12 +584,6 @@ export default function App() {
     commitBoardDrop(event, fallbackCell.y, fallbackCell.x);
   }
 
-  function placeSelectedPiece() {
-    startTimer();
-    recordMove();
-    lockPieceInPlace(selectedIndex);
-  }
-
   function tryPlaceSelectedPiece(showAlert = false) {
     if (hasWon || placedPieces[selectedIndex]) {
       return;
@@ -619,7 +598,9 @@ export default function App() {
       return;
     }
 
-    placeSelectedPiece();
+    startTimer();
+    recordMove();
+    lockPieceInPlace(selectedIndex);
   }
 
   useEffect(() => {
@@ -711,7 +692,7 @@ export default function App() {
         case "z":
         case "Z":
           startTimer();
-          rotateSelectedPiece();
+          rotatePiece(selectedIndex);
           break;
         case "ArrowUp":
         case "w":
@@ -790,7 +771,7 @@ export default function App() {
           />
         ) : null}
 
-        <main className="game-layout">
+        <main className="game-layout mission-grid">
           <PieceGallery
             pieces={rotatedPieces}
             placedPieces={placedPieces}
@@ -803,11 +784,10 @@ export default function App() {
             onPieceDragEnd={handlePieceDragEnd}
           />
 
-          <section className="board-panel">
+          <section className="board-panel board-stage">
             <div className="panel-header">
               <div>
-                <p className="panel-label">Board</p>
-                <h2 className="panel-title">Light the Ghosts</h2>
+                <h2 className="panel-title">Board</h2>
               </div>
             </div>
             <Board
@@ -822,7 +802,7 @@ export default function App() {
               onBoardDragOver={handleBoardDragOver}
               onBoardDrop={handleBoardDrop}
               onCellDragOver={handleBoardCellDragOver}
-              onCellDrop={handleBoardCellDrop}
+              onCellDrop={commitBoardDrop}
             />
 
             <ActivePiecePanel
@@ -834,9 +814,9 @@ export default function App() {
               selectedIndex={selectedIndex}
               allPiecesPlaced={allPiecesPlaced}
               feedback={feedback}
-              onRotateLeft={() => rotateSelectedPiece(-1)}
-              onRotateRight={() => rotateSelectedPiece()}
-              onRotatePreview={() => rotateSelectedPiece()}
+              onRotateLeft={() => rotatePiece(selectedIndex, -1)}
+              onRotateRight={() => rotatePiece(selectedIndex)}
+              onRotatePreview={() => rotatePiece(selectedIndex)}
               onPreviousPiece={() => switchPiece(-1)}
               onNextPiece={() => switchPiece(1)}
               onPieceDragStart={handlePieceDragStart}
@@ -844,17 +824,17 @@ export default function App() {
               onPlacePiece={() => tryPlaceSelectedPiece(true)}
             />
           </section>
-        </main>
 
-        <GameSidebar
-          pieceCount={pieces.length}
-          keyboardEnabled={keyboardEnabled}
-          settingsOpen={settingsOpen}
-          controlMode={controlMode}
-          onToggleSettings={() => setSettingsOpen((open) => !open)}
-          onSetControlMode={handleControlModeChange}
-          onResetGame={resetGame}
-        />
+          <GameSidebar
+            pieceCount={pieces.length}
+            keyboardEnabled={keyboardEnabled}
+            settingsOpen={settingsOpen}
+            controlMode={controlMode}
+            onToggleSettings={() => setSettingsOpen((open) => !open)}
+            onSetControlMode={handleControlModeChange}
+            onResetGame={resetGame}
+          />
+        </main>
       </div>
     </div>
   );
