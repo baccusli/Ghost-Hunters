@@ -804,7 +804,9 @@ export default function App() {
               onCellDragOver={handleBoardCellDragOver}
               onCellDrop={commitBoardDrop}
             />
+          </section>
 
+          <div className="board-workbench">
             <ActivePiecePanel
               dragEnabled={dragEnabled}
               hasWon={hasWon}
@@ -823,7 +825,7 @@ export default function App() {
               onPieceDragEnd={handlePieceDragEnd}
               onPlacePiece={() => tryPlaceSelectedPiece(true)}
             />
-          </section>
+          </div>
 
           <GameSidebar
             pieceCount={pieces.length}

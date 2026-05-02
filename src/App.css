@@ -301,7 +301,9 @@ button {
 .mission-grid {
   display: grid;
   grid-template-columns: minmax(250px, 290px) minmax(0, 1fr) minmax(290px, 360px);
-  grid-template-areas: "gallery board sidebar";
+  grid-template-areas:
+    "gallery board sidebar"
+    "gallery workbench sidebar";
   gap: 24px;
   align-items: start;
 }
@@ -312,6 +314,12 @@ button {
 
 .board-stage {
   grid-area: board;
+}
+
+.board-workbench {
+  grid-area: workbench;
+  display: grid;
+  gap: 20px;
 }
 
 .sidebar-bottom {
@@ -875,6 +883,7 @@ button {
     grid-template-columns: minmax(240px, 290px) minmax(0, 1fr);
     grid-template-areas:
       "gallery board"
+      "gallery workbench"
       "sidebar sidebar";
   }
 
@@ -897,8 +906,9 @@ button {
   .mission-grid {
     grid-template-areas:
       "board"
-      "sidebar"
-      "gallery";
+      "gallery"
+      "workbench"
+      "sidebar";
   }
 
   .piece-gallery-sidebar,
@@ -921,10 +931,12 @@ button {
   }
 
   .mission-grid {
-    grid-template-columns: minmax(116px, 132px) minmax(0, 1fr);
+    grid-template-columns: 1fr;
     grid-template-areas:
-      "gallery board"
-      "sidebar sidebar";
+      "board"
+      "gallery"
+      "workbench"
+      "sidebar";
     gap: 14px;
     align-items: start;
   }
@@ -955,9 +967,7 @@ button {
   }
 
   .piece-gallery-sidebar {
-    position: sticky;
-    top: 16px;
-    z-index: 8;
+    position: static;
     border-color: rgba(123, 221, 255, 0.18);
     box-shadow: 0 20px 40px rgba(2, 8, 20, 0.34);
   }
@@ -1012,10 +1022,10 @@ button {
 
   .board-cell,
   .tray-cell {
-    width: clamp(34px, 9vw, 46px);
-    height: clamp(34px, 9vw, 46px);
+    width: clamp(50px, 17vw, 70px);
+    height: clamp(50px, 17vw, 70px);
     border-radius: 14px;
-    font-size: clamp(20px, 5.8vw, 32px);
+    font-size: clamp(28px, 8vw, 40px);
   }
 
   .board {
@@ -1054,19 +1064,23 @@ button {
   }
 
   .tray-preview {
-    --tray-cell-size: clamp(34px, 10vw, 46px);
-    --tray-font-size: clamp(22px, 6vw, 28px);
+    --tray-cell-size: clamp(34px, 10vw, 48px);
+    --tray-font-size: clamp(22px, 6vw, 30px);
   }
 
   .tray-gallery {
-    --tray-cell-size: clamp(16px, 4.4vw, 22px);
+    --tray-cell-size: clamp(22px, 6vw, 28px);
     --tray-cell-radius: 8px;
-    --tray-font-size: clamp(10px, 3vw, 14px);
+    --tray-font-size: clamp(12px, 3.8vw, 16px);
     --tray-gap: 4px;
   }
 
   .board-tray-panel {
     padding: 16px;
+  }
+
+  .board-workbench {
+    gap: 14px;
   }
 
   .board-tray-header,
@@ -1098,6 +1112,7 @@ button {
     grid-template-columns: minmax(132px, 156px) minmax(0, 1fr);
     grid-template-areas:
       "gallery board"
+      "gallery workbench"
       "sidebar sidebar";
     gap: 12px;
   }
